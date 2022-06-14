@@ -1,11 +1,17 @@
-import { ESLintUtils } from '@typescript-eslint/utils';
-import path from 'path';
-import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path';
-export var MessageId;
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MessageId = void 0;
+const utils_1 = require("@typescript-eslint/utils");
+const path_1 = __importDefault(require("path"));
+const path_2 = require("../utils/path");
+var MessageId;
 (function (MessageId) {
     MessageId["HAS_RELATIVE_PATH_IMPORT"] = "HAS_RELATIVE_PATH_IMPORT";
-})(MessageId || (MessageId = {}));
-export default {
+})(MessageId = exports.MessageId || (exports.MessageId = {}));
+exports.default = {
     meta: {
         docs: {
             description: 'Disallow relative path imports (../*, ./*)',
@@ -20,16 +26,16 @@ export default {
         },
     },
     create(context) {
-        const { program } = ESLintUtils.getParserServices(context);
+        const { program } = utils_1.ESLintUtils.getParserServices(context);
         const compilerOptions = program.getCompilerOptions();
         const currentDirectory = program.getCurrentDirectory();
         const { paths = {}, baseUrl = currentDirectory } = compilerOptions;
-        const sepSuffixedBaseUrl = getSepSuffixedFolderPath(baseUrl);
+        const sepSuffixedBaseUrl = (0, path_2.getSepSuffixedFolderPath)(baseUrl);
         const pathMap = {};
         const getFixedFilePath = (relativeTargetFilePath) => {
-            const lintingFilePath = getLintingFilePath(context);
-            const lintingFolderPath = path.dirname(lintingFilePath);
-            const absoluteTargetFilePath = path.resolve(lintingFolderPath, relativeTargetFilePath);
+            const lintingFilePath = (0, path_2.getLintingFilePath)(context);
+            const lintingFolderPath = path_1.default.dirname(lintingFilePath);
+            const absoluteTargetFilePath = path_1.default.resolve(lintingFolderPath, relativeTargetFilePath);
             if (absoluteTargetFilePath.toLowerCase().startsWith(sepSuffixedBaseUrl.toLocaleLowerCase())) {
                 return absoluteTargetFilePath.slice(sepSuffixedBaseUrl.length);
             }
@@ -44,7 +50,7 @@ export default {
                     return;
                 }
                 const [_, quote, importPath] = matchResult;
-                const isRelativePath = !!importPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath));
+                const isRelativePath = !!importPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
                 if (!isRelativePath) {
                     return;
                 }
