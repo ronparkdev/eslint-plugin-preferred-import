@@ -4,13 +4,8 @@ import path from 'path'
 import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
 interface Options {
-  allowParentPathImport?: boolean // Whether to allow ../ (default: false)
-  allowChildPathImport?: boolean // Whether to allow ./ (default: true)
-}
-
-const DEFAULT_OPTIONS: Options = {
-  allowParentPathImport: false,
-  allowChildPathImport: true,
+  allowParentPathImport?: boolean
+  allowChildPathImport?: boolean
 }
 
 export enum MessageId {
@@ -26,13 +21,30 @@ export default {
     },
     fixable: 'code',
     type: 'suggestion',
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          allowParentPathImport: {
+            description: 'If `false`, will report ../ included imports.',
+            type: 'boolean',
+            default: false,
+          },
+          allowChildPathImport: {
+            description: 'If `false`, will report ./ included imports.',
+            type: 'boolean',
+            default: true,
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       [MessageId.HAS_RELATIVE_PATH_IMPORT]: `has relative path import '{{filePath}}'`,
     },
   },
   create(context) {
-    const options = Object.assign(Object.assign({}, DEFAULT_OPTIONS), context.options[0] || {}) as Options
+    const options = context.options[0] || {}
 
     let targetSubPaths = []
 

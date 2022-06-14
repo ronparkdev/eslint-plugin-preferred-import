@@ -7,10 +7,6 @@ exports.MessageId = void 0;
 const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
 const path_2 = require("../utils/path");
-const DEFAULT_OPTIONS = {
-    allowParentPathImport: false,
-    allowChildPathImport: true,
-};
 var MessageId;
 (function (MessageId) {
     MessageId["HAS_RELATIVE_PATH_IMPORT"] = "HAS_RELATIVE_PATH_IMPORT";
@@ -24,13 +20,30 @@ exports.default = {
         },
         fixable: 'code',
         type: 'suggestion',
-        schema: [],
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    allowParentPathImport: {
+                        description: 'If `false`, will report ../ included imports.',
+                        type: 'boolean',
+                        default: false,
+                    },
+                    allowChildPathImport: {
+                        description: 'If `false`, will report ./ included imports.',
+                        type: 'boolean',
+                        default: true,
+                    },
+                },
+                additionalProperties: false,
+            },
+        ],
         messages: {
             [MessageId.HAS_RELATIVE_PATH_IMPORT]: `has relative path import '{{filePath}}'`,
         },
     },
     create(context) {
-        const options = Object.assign(Object.assign({}, DEFAULT_OPTIONS), context.options[0] || {});
+        const options = context.options[0] || {};
         let targetSubPaths = [];
         if (options.allowParentPathImport !== true) {
             targetSubPaths.push('..');
