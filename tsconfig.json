@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "esModuleInterop": true,
+    "target": "ES2016",
+    "moduleResolution": "Node",
+    "removeComments": true
+  },
+  "include": ["src"]
+}

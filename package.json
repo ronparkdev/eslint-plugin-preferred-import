@@ -1,0 +1,51 @@
+{
+  "name": "eslint-plugin-ts-imports",
+  "version": "1.0.0",
+  "description": "Report and autofix relative imports",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "tsc --clean",
+    "format": "prettier --write src/**/*.ts",
+    "test": "jest",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r0npark/eslint-plugin-ts-imports.git"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "import",
+    "relative",
+    "modules",
+    "autofix"
+  ],
+  "author": "Sang Min Park (r0npark)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/r0npark/eslint-plugin-ts-imports/issues"
+  },
+  "homepage": "https://github.com/r0npark/eslint-plugin-ts-imports#readme",
+  "devDependencies": {
+    "@types/eslint": "^8.4.2",
+    "@typescript-eslint/parser": "^5.28.0",
+    "eslint": "^8.17.0",
+    "husky": "^8.0.1",
+    "jest": "^28.1.0",
+    "lint-staged": "^13.0.1",
+    "prettier": "2.6.2",
+    "ts-jest": "^28.0.3"
+  },
+  "engines": {
+    "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^5.27.1"
+  },
+  "lint-staged": {
+    "*.ts": "prettier --write"
+  }
+}
