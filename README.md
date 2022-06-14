@@ -1,4 +1,4 @@
-# eslint-plugin-ts-imports
+# eslint-plugin-preferred-imports
 
 ## prefer-ts-paths-imports
 The rule that autofix imports to match the settings in tscconfig.json paths

@@ -1,7 +1,7 @@
 {
-  "name": "eslint-plugin-ts-imports",
+  "name": "eslint-plugin-preferred-imports",
   "version": "1.0.0",
-  "description": "Report and autofix relative imports",
+  "description": "Lint rule to autofix unpreferred imports",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/r0npark/eslint-plugin-ts-imports.git"
+    "url": "git+https://github.com/r0npark/eslint-plugin-preferred-imports.git"
   },
   "keywords": [
     "eslint",
@@ -26,9 +26,10 @@
   "author": "Sang Min Park (r0npark)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/r0npark/eslint-plugin-ts-imports/issues"
+    "url": "https://github.com/r0npark/eslint-plugin-preferred-imports/issues",
+    "email": "ronpark.dev@gmail.com"
   },
-  "homepage": "https://github.com/r0npark/eslint-plugin-ts-imports#readme",
+  "homepage": "https://github.com/r0npark/eslint-plugin-preferred-imports#readme",
   "devDependencies": {
     "@types/eslint": "^8.4.2",
     "@typescript-eslint/parser": "^5.28.0",
