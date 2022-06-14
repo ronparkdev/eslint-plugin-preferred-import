@@ -7,6 +7,10 @@ exports.MessageId = void 0;
 const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
 const path_2 = require("../utils/path");
+const DEFAULT_OPTIONS = {
+    allowParentPathImport: false,
+    allowChildPathImport: true,
+};
 var MessageId;
 (function (MessageId) {
     MessageId["HAS_RELATIVE_PATH_IMPORT"] = "HAS_RELATIVE_PATH_IMPORT";
@@ -26,12 +30,19 @@ exports.default = {
         },
     },
     create(context) {
+        const options = Object.assign(Object.assign({}, DEFAULT_OPTIONS), context.options[0] || {});
+        let targetSubPaths = [];
+        if (options.allowParentPathImport !== true) {
+            targetSubPaths.push('..');
+        }
+        if (options.allowChildPathImport !== true) {
+            targetSubPaths.push('.');
+        }
         const { program } = utils_1.ESLintUtils.getParserServices(context);
         const compilerOptions = program.getCompilerOptions();
         const currentDirectory = program.getCurrentDirectory();
-        const { paths = {}, baseUrl = currentDirectory } = compilerOptions;
+        const { baseUrl = currentDirectory } = compilerOptions;
         const sepSuffixedBaseUrl = (0, path_2.getSepSuffixedFolderPath)(baseUrl);
-        const pathMap = {};
         const getFixedFilePath = (relativeTargetFilePath) => {
             const lintingFilePath = (0, path_2.getLintingFilePath)(context);
             const lintingFolderPath = path_1.default.dirname(lintingFilePath);
@@ -50,7 +61,7 @@ exports.default = {
                     return;
                 }
                 const [_, quote, importPath] = matchResult;
-                const isRelativePath = !!importPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
+                const isRelativePath = !!importPath.split(path_1.default.sep).find((subPath) => targetSubPaths.includes(subPath));
                 if (!isRelativePath) {
                     return;
                 }

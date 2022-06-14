@@ -3,11 +3,14 @@ import { ESLintUtils } from '@typescript-eslint/utils'
 import path from 'path'
 import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
-type MappingPathMap = {
-  [absoluteSrcPath: string]: {
-    distPath: string
-    prefixed: boolean
-  }
+interface Options {
+  allowParentPathImport?: boolean // Whether to allow ../ (default: false)
+  allowChildPathImport?: boolean // Whether to allow ./ (default: true)
+}
+
+const DEFAULT_OPTIONS: Options = {
+  allowParentPathImport: false,
+  allowChildPathImport: true,
 }
 
 export enum MessageId {
@@ -29,17 +32,26 @@ export default {
     },
   },
   create(context) {
+    const options = Object.assign(Object.assign({}, DEFAULT_OPTIONS), context.options[0] || {}) as Options
+
+    let targetSubPaths = []
+
+    if (options.allowParentPathImport !== true) {
+      targetSubPaths.push('..')
+    }
+
+    if (options.allowChildPathImport !== true) {
+      targetSubPaths.push('.')
+    }
+
     const { program } = ESLintUtils.getParserServices(context)
 
     const compilerOptions = program.getCompilerOptions()
     const currentDirectory = program.getCurrentDirectory()
 
-    const { paths = {}, baseUrl = currentDirectory } = compilerOptions
+    const { baseUrl = currentDirectory } = compilerOptions
 
     const sepSuffixedBaseUrl = getSepSuffixedFolderPath(baseUrl)
-
-    // Get replace path map for replacing from absolute path to short path
-    const pathMap: MappingPathMap = {}
 
     const getFixedFilePath = (relativeTargetFilePath: string): string => {
       const lintingFilePath = getLintingFilePath(context)
@@ -64,7 +76,7 @@ export default {
 
         const [_, quote, importPath] = matchResult
 
-        const isRelativePath = !!importPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))
+        const isRelativePath = !!importPath.split(path.sep).find((subPath) => targetSubPaths.includes(subPath))
         if (!isRelativePath) {
           return
         }
