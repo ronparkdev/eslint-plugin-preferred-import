@@ -3,20 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MessageId = void 0;
 const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
+const createRule_1 = require("../utils/createRule");
 const path_2 = require("../utils/path");
-var MessageId;
-(function (MessageId) {
-    MessageId["HAS_RELATIVE_PATH_IMPORT"] = "HAS_RELATIVE_PATH_IMPORT";
-})(MessageId = exports.MessageId || (exports.MessageId = {}));
-exports.default = {
+exports.default = (0, createRule_1.createRule)({
+    name: 'no-relative-path-imports',
     meta: {
         docs: {
             description: 'Disallow relative path imports (../*, ./*)',
-            category: 'Best Practices',
-            recommended: false,
+            recommended: 'error',
+            suggestion: true,
         },
         fixable: 'code',
         type: 'suggestion',
@@ -39,11 +36,14 @@ exports.default = {
             },
         ],
         messages: {
-            [MessageId.HAS_RELATIVE_PATH_IMPORT]: `has relative path import '{{filePath}}'`,
+            hasRelativePathImport: `has relative path import '{{filePath}}'`,
         },
     },
-    create(context) {
-        const options = context.options[0] || {};
+    defaultOptions: [{
+            allowParentPathImport: false,
+            allowChildPathImport: true,
+        }],
+    create(context, [options]) {
         let targetSubPaths = [];
         if (options.allowParentPathImport !== true) {
             targetSubPaths.push('..');
@@ -68,6 +68,7 @@ exports.default = {
         return {
             ImportDeclaration(node) {
                 var _a;
+                console.log('A', node);
                 const { source } = node;
                 const matchResult = /^(["'])(.*)(\1)$/g.exec(((_a = source === null || source === void 0 ? void 0 : source.raw) === null || _a === void 0 ? void 0 : _a.trim()) || '');
                 if (!matchResult) {
@@ -83,7 +84,7 @@ exports.default = {
                     context.report({
                         node,
                         data: { filePath: fixedFilePath },
-                        messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+                        messageId: 'hasRelativePathImport',
                         fix(fixer) {
                             return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`);
                         },
@@ -92,4 +93,4 @@ exports.default = {
             },
         };
     },
-};
+});

@@ -3,28 +3,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MessageId = void 0;
 const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
+const createRule_1 = require("../utils/createRule");
 const path_2 = require("../utils/path");
-var MessageId;
-(function (MessageId) {
-    MessageId["HAS_TS_PATHS_IMPORT"] = "HAS_TS_PATHS_IMPORT";
-})(MessageId = exports.MessageId || (exports.MessageId = {}));
-exports.default = {
+exports.default = (0, createRule_1.createRule)({
+    name: 'prefer-ts-paths-imports',
     meta: {
         docs: {
             description: 'Disallow replaceable imports defined in paths of tsconfig.json',
-            category: 'Best Practices',
-            recommended: false,
+            recommended: 'error',
+            suggestion: true,
         },
         fixable: 'code',
         type: 'suggestion',
         schema: [],
         messages: {
-            [MessageId.HAS_TS_PATHS_IMPORT]: `has replaceable import '{{filePath}}'`,
+            hasTsPathsImport: `has replaceable import '{{filePath}}'`,
         },
     },
+    defaultOptions: [],
     create(context) {
         const { program } = utils_1.ESLintUtils.getParserServices(context);
         const compilerOptions = program.getCompilerOptions();
@@ -67,6 +65,7 @@ exports.default = {
         return {
             ImportDeclaration(node) {
                 var _a;
+                console.log('B', node);
                 const { source } = node;
                 const matchResult = /^(["'])(.*)(\1)$/g.exec(((_a = source === null || source === void 0 ? void 0 : source.raw) === null || _a === void 0 ? void 0 : _a.trim()) || '');
                 if (!matchResult) {
@@ -78,7 +77,7 @@ exports.default = {
                     context.report({
                         node,
                         data: { filePath: fixedFilePath },
-                        messageId: MessageId.HAS_TS_PATHS_IMPORT,
+                        messageId: 'hasTsPathsImport',
                         fix(fixer) {
                             return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`);
                         },
@@ -87,4 +86,4 @@ exports.default = {
             },
         };
     },
-};
+});

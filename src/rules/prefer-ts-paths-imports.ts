@@ -1,6 +1,7 @@
 import { ESLintUtils } from '@typescript-eslint/utils'
 
 import path from 'path'
+import { createRule } from '../utils/createRule'
 import { getLintingFilePath } from '../utils/path'
 
 type MappingPathMap = {
@@ -10,24 +11,25 @@ type MappingPathMap = {
   }
 }
 
-export enum MessageId {
-  HAS_TS_PATHS_IMPORT = 'HAS_TS_PATHS_IMPORT',
-}
+type Options = []
+type MessageIds = 'hasTsPathsImport'
 
-export default {
+export default createRule<Options, MessageIds>({
+  name: 'prefer-ts-paths-imports',
   meta: {
     docs: {
       description: 'Disallow replaceable imports defined in paths of tsconfig.json',
-      category: 'Best Practices',
-      recommended: false,
+      recommended: 'error',
+      suggestion: true,
     },
     fixable: 'code',
     type: 'suggestion',
     schema: [],
     messages: {
-      [MessageId.HAS_TS_PATHS_IMPORT]: `has replaceable import '{{filePath}}'`,
+      hasTsPathsImport: `has replaceable import '{{filePath}}'`,
     },
   },
+  defaultOptions: [],
   create(context) {
     const { program } = ESLintUtils.getParserServices(context)
 
@@ -96,7 +98,7 @@ export default {
           context.report({
             node,
             data: { filePath: fixedFilePath },
-            messageId: MessageId.HAS_TS_PATHS_IMPORT,
+            messageId: 'hasTsPathsImport',
             fix(fixer) {
               return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`)
             },
@@ -105,4 +107,4 @@ export default {
       },
     }
   },
-} as const
+})

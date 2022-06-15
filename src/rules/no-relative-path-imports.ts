@@ -1,23 +1,25 @@
 import { ESLintUtils } from '@typescript-eslint/utils'
 
 import path from 'path'
+import { createRule } from '../utils/createRule'
 import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
-interface Options {
-  allowParentPathImport?: boolean
-  allowChildPathImport?: boolean
-}
+type Options = [
+  {
+    allowParentPathImport?: boolean
+    allowChildPathImport?: boolean
+  },
+]
 
-export enum MessageId {
-  HAS_RELATIVE_PATH_IMPORT = 'HAS_RELATIVE_PATH_IMPORT',
-}
+type MessageIds = 'hasRelativePathImport'
 
-export default {
+export default createRule<Options, MessageIds>({
+  name: 'no-relative-path-imports',
   meta: {
     docs: {
       description: 'Disallow relative path imports (../*, ./*)',
-      category: 'Best Practices',
-      recommended: false,
+      recommended: 'error',
+      suggestion: true,
     },
     fixable: 'code',
     type: 'suggestion',
@@ -40,12 +42,16 @@ export default {
       },
     ],
     messages: {
-      [MessageId.HAS_RELATIVE_PATH_IMPORT]: `has relative path import '{{filePath}}'`,
+      hasRelativePathImport: `has relative path import '{{filePath}}'`,
     },
   },
-  create(context) {
-    const options = context.options[0] || {}
-
+  defaultOptions: [
+    {
+      allowParentPathImport: false,
+      allowChildPathImport: true,
+    },
+  ],
+  create(context, [options]) {
     let targetSubPaths = []
 
     if (options.allowParentPathImport !== true) {
@@ -99,7 +105,7 @@ export default {
           context.report({
             node,
             data: { filePath: fixedFilePath },
-            messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+            messageId: 'hasRelativePathImport',
             fix(fixer) {
               return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`)
             },
@@ -108,4 +114,4 @@ export default {
       },
     }
   },
-} as const
+})
