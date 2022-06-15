@@ -29,7 +29,7 @@ exports.default = (0, createRule_1.createRule)({
                     allowChildPathImport: {
                         description: 'If `false`, will report ./ included imports.',
                         type: 'boolean',
-                        default: true,
+                        default: false,
                     },
                 },
                 additionalProperties: false,
@@ -39,10 +39,12 @@ exports.default = (0, createRule_1.createRule)({
             hasRelativePathImport: `has relative path import '{{filePath}}'`,
         },
     },
-    defaultOptions: [{
+    defaultOptions: [
+        {
             allowParentPathImport: false,
-            allowChildPathImport: true,
-        }],
+            allowChildPathImport: false,
+        },
+    ],
     create(context, [options]) {
         let targetSubPaths = [];
         if (options.allowParentPathImport !== true) {
@@ -68,7 +70,6 @@ exports.default = (0, createRule_1.createRule)({
         return {
             ImportDeclaration(node) {
                 var _a;
-                console.log('A', node);
                 const { source } = node;
                 const matchResult = /^(["'])(.*)(\1)$/g.exec(((_a = source === null || source === void 0 ? void 0 : source.raw) === null || _a === void 0 ? void 0 : _a.trim()) || '');
                 if (!matchResult) {

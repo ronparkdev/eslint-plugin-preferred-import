@@ -23,7 +23,7 @@ The rule that autofixes the absolute path if using relative paths `../` and `./`
 
 ### Options
 * allowParentPathImport : Whether to allow ../ (default: false)
-* allowChildPathImport : Whether to allow ./ (default: true)
+* allowChildPathImport : Whether to allow ./ (default: false)
 
 ### Configuration Guide
 You need setup .eslintrc.js or .eslintrc.json in your project

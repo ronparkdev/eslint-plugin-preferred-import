@@ -65,7 +65,6 @@ exports.default = (0, createRule_1.createRule)({
         return {
             ImportDeclaration(node) {
                 var _a;
-                console.log('B', node);
                 const { source } = node;
                 const matchResult = /^(["'])(.*)(\1)$/g.exec(((_a = source === null || source === void 0 ? void 0 : source.raw) === null || _a === void 0 ? void 0 : _a.trim()) || '');
                 if (!matchResult) {
