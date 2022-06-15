@@ -3,7 +3,7 @@ import path from 'path'
 
 const { RuleTester } = ESLintUtils
 
-import rule, { MessageId } from '../../src/rules/prefer-ts-paths-imports'
+import rule from '../../src/rules/prefer-ts-paths-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/simple', filePath)
 
@@ -33,7 +33,7 @@ ruleTester.run('prefer-ts-paths-imports - simple', rule, {
       code: `import { Bar } from 'share/barUtil'`,
       errors: [
         {
-          messageId: MessageId.HAS_TS_PATHS_IMPORT,
+          messageId: 'hasTsPathsImport',
           data: { filePath: '@share/barUtil' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -45,7 +45,7 @@ ruleTester.run('prefer-ts-paths-imports - simple', rule, {
       code: `import { Standalone as StandaloneB } from './standalone'`,
       errors: [
         {
-          messageId: MessageId.HAS_TS_PATHS_IMPORT,
+          messageId: 'hasTsPathsImport',
           data: { filePath: '@standalone' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -57,7 +57,7 @@ ruleTester.run('prefer-ts-paths-imports - simple', rule, {
       code: `import { Standalone as StandaloneB } from "./standalone"`,
       errors: [
         {
-          messageId: MessageId.HAS_TS_PATHS_IMPORT,
+          messageId: 'hasTsPathsImport',
           data: { filePath: '@standalone' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },

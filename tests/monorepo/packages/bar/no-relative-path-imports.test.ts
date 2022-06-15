@@ -3,7 +3,7 @@ import path from 'path'
 
 const { RuleTester } = ESLintUtils
 
-import rule, { MessageId } from '../../../../src/rules/no-relative-path-imports'
+import rule from '../../../../src/rules/no-relative-path-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 
@@ -24,7 +24,7 @@ ruleTester.run('no-relative-path-imports - monorepo wrong case', rule, {
       code: `import { Service } from './service'`,
       errors: [
         {
-          messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+          messageId: 'hasRelativePathImport',
           data: { filePath: 'service' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -36,7 +36,7 @@ ruleTester.run('no-relative-path-imports - monorepo wrong case', rule, {
       code: `import { OneUtil } from '../util/one'`,
       errors: [
         {
-          messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+          messageId: 'hasRelativePathImport',
           data: { filePath: 'util/one' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },

@@ -4,8 +4,8 @@
   "description": "Lint rule to autofix unpreferred imports",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "clean": "tsc --build --clean",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "tsc -p tsconfig.build.json --build --clean",
     "format": "prettier --write src/**/*.ts",
     "test": "jest",
     "prepare": "husky install"

@@ -1,9 +1,9 @@
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
+import { ESLintUtils } from '@typescript-eslint/utils'
 import path from 'path'
 
 const { RuleTester } = ESLintUtils
 
-import rule, { MessageId } from '../../../../src/rules/no-relative-path-imports'
+import rule from '../../../../src/rules/no-relative-path-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 

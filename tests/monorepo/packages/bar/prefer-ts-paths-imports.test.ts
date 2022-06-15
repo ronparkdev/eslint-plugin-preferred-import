@@ -3,7 +3,7 @@ import path from 'path'
 
 const { RuleTester } = ESLintUtils
 
-import rule, { MessageId } from '../../../../src/rules/prefer-ts-paths-imports'
+import rule from '../../../../src/rules/prefer-ts-paths-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 
@@ -24,7 +24,7 @@ ruleTester.run('prefer-ts-paths-imports - monorepo wrong case', rule, {
       code: `import { Service as FooService } from '../foo/service'`,
       errors: [
         {
-          messageId: MessageId.HAS_TS_PATHS_IMPORT,
+          messageId: 'hasTsPathsImport',
           data: { filePath: '@foo/service' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -36,7 +36,7 @@ ruleTester.run('prefer-ts-paths-imports - monorepo wrong case', rule, {
       code: `import { Service as ShareService } from '../share/service'`,
       errors: [
         {
-          messageId: MessageId.HAS_TS_PATHS_IMPORT,
+          messageId: 'hasTsPathsImport',
           data: { filePath: '@share/service' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },

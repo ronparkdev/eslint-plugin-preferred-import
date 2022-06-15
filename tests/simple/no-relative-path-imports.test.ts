@@ -3,7 +3,7 @@ import path from 'path'
 
 const { RuleTester } = ESLintUtils
 
-import rule, { MessageId } from '../../src/rules/no-relative-path-imports'
+import rule from '../../src/rules/no-relative-path-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/simple', filePath)
 
@@ -29,7 +29,7 @@ ruleTester.run('no-relative-path-imports - simple', rule, {
       code: `import { Standalone as StandaloneB } from './standalone'`,
       errors: [
         {
-          messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+          messageId: 'hasRelativePathImport',
           data: { filePath: 'standalone' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -41,7 +41,7 @@ ruleTester.run('no-relative-path-imports - simple', rule, {
       code: `import { Standalone as StandaloneC } from "./standalone"`,
       errors: [
         {
-          messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+          messageId: 'hasRelativePathImport',
           data: { filePath: 'standalone' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
@@ -53,7 +53,7 @@ ruleTester.run('no-relative-path-imports - simple', rule, {
       code: `import { OneUtil } from '../util/one'`,
       errors: [
         {
-          messageId: MessageId.HAS_RELATIVE_PATH_IMPORT,
+          messageId: 'hasRelativePathImport',
           data: { filePath: 'util/one' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
