@@ -85,10 +85,6 @@ exports.default = (0, createRule_1.createRule)({
                     return;
                 }
                 const [_, quote, importPath] = matchResult;
-                const isRelativePath = !!importPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
-                if (!isRelativePath) {
-                    return;
-                }
                 const fixedFilePath = getFixedFilePath(importPath);
                 if (!!fixedFilePath && fixedFilePath !== importPath) {
                     context.report({

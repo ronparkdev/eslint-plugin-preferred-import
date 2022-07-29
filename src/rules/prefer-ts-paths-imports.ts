@@ -116,13 +116,6 @@ export default createRule<Options, MessageIds>({
         }
 
         const [_, quote, importPath] = matchResult
-
-        // If the relative path is not included, the library will also lint
-        const isRelativePath = !!importPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))
-        if (!isRelativePath) {
-          return
-        }
-
         const fixedFilePath = getFixedFilePath(importPath)
 
         if (!!fixedFilePath && fixedFilePath !== importPath) {
