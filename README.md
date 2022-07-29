@@ -14,6 +14,10 @@ module.exports = {
   },
   rules: {
     'preferred-import/prefer-ts-paths-imports': 'error', // Add your rule config to rules
+    // or
+    'preferred-import/no-relative-path-imports': ['error', {
+      'ignoreChildPathImport': false, // ignore lint of ./ included import, (default is true)
+    }]
   }
 }
 ```

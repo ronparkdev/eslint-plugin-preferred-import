@@ -12,7 +12,12 @@ type MappingPathMap = {
   }
 }
 
-type Options = []
+type Options = [
+  {
+    ignoreChildPathImport?: boolean
+  },
+]
+
 type MessageIds = 'hasTsPathsImport'
 
 const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js']
@@ -27,13 +32,30 @@ export default createRule<Options, MessageIds>({
     },
     fixable: 'code',
     type: 'suggestion',
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          ignoreChildPathImport: {
+            description: 'If `true`, will ignore ./ included imports.',
+            type: 'boolean',
+            default: true,
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       hasTsPathsImport: `has replaceable import '{{filePath}}'`,
     },
   },
-  defaultOptions: [],
-  create(context) {
+  defaultOptions: [
+    {
+      ignoreChildPathImport: true,
+    },
+  ],
+  create(context, [options]) {
+    const { ignoreChildPathImport } = options || {}
     const { program } = ESLintUtils.getParserServices(context)
 
     const compilerOptions = program.getCompilerOptions()
@@ -116,6 +138,11 @@ export default createRule<Options, MessageIds>({
         }
 
         const [_, quote, importPath] = matchResult
+
+        if (ignoreChildPathImport && importPath.startsWith('./')) {
+          return
+        }
+
         const fixedFilePath = getFixedFilePath(importPath)
 
         if (!!fixedFilePath && fixedFilePath !== importPath) {
