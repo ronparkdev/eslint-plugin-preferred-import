@@ -47,8 +47,10 @@ exports.default = (0, createRule_1.createRule)({
         const checkIsInternalSourceFile = (filePath) => {
             return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
                 .map((path) => program.getSourceFile(path))
-                .filter((sourceFile) => !program.isSourceFileDefaultLibrary(sourceFile) && !program.isSourceFileFromExternalLibrary(sourceFile))
-                .find((path) => !!path);
+                .filter((sourceFile) => sourceFile &&
+                !program.isSourceFileDefaultLibrary(sourceFile) &&
+                !program.isSourceFileFromExternalLibrary(sourceFile))
+                .find((sourceFile) => !!sourceFile);
         };
         const getFixedFilePath = (targetPath) => {
             const lintingPath = (0, path_2.getLintingFilePath)(context);
