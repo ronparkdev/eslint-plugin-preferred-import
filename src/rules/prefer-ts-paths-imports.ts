@@ -15,6 +15,8 @@ type MappingPathMap = {
 type Options = []
 type MessageIds = 'hasTsPathsImport'
 
+const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js']
+
 export default createRule<Options, MessageIds>({
   name: 'prefer-ts-paths-imports',
   meta: {
@@ -59,22 +61,41 @@ export default createRule<Options, MessageIds>({
       })
     })
 
-    const getFixedFilePath = (relativeTargetFilePath: string): string => {
-      const lintingFilePath = getLintingFilePath(context)
-      const lintingFolderPath = path.dirname(lintingFilePath)
+    const checkIsInternalSourceFile = (filePath: string) => {
+      return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
+        .map((path) => program.getSourceFile(path))
+        .filter(
+          (sourceFile) =>
+            !program.isSourceFileDefaultLibrary(sourceFile) && !program.isSourceFileFromExternalLibrary(sourceFile),
+        )
+        .find((path) => !!path)
+    }
 
-      const absoluteTargetFilePath = path.resolve(lintingFolderPath, relativeTargetFilePath)
+    const getFixedFilePath = (targetPath) => {
+      const lintingPath = getLintingFilePath(context)
+      const lintingBasePath = path.dirname(lintingPath)
 
-      for (const absoluteSrcFilePath of Object.keys(pathMap)) {
-        const { distPath, prefixed } = pathMap[absoluteSrcFilePath]
+      const isRelativeTargetPath = !!targetPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))
+
+      const absoluteTargetPath = path.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath)
+
+      const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath)
+
+      // Ignore external library and default library
+      if (!isInternalTargetPath) {
+        return null
+      }
+
+      for (const absoluteSrcPath of Object.keys(pathMap)) {
+        const { distPath, prefixed } = pathMap[absoluteSrcPath]
 
         // Ignore case between two files
         if (prefixed) {
-          if (absoluteTargetFilePath.toLowerCase().startsWith(absoluteSrcFilePath.toLocaleLowerCase())) {
-            return path.join(distPath, absoluteTargetFilePath.slice(absoluteSrcFilePath.length))
+          if (absoluteTargetPath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase())) {
+            return path.join(distPath, absoluteTargetPath.slice(absoluteSrcPath.length))
           }
         } else {
-          if (absoluteTargetFilePath.toLowerCase() === absoluteSrcFilePath.toLowerCase()) {
+          if (absoluteTargetPath.toLowerCase() === absoluteSrcPath.toLowerCase()) {
             return distPath
           }
         }
