@@ -18,13 +18,30 @@ exports.default = (0, createRule_1.createRule)({
         },
         fixable: 'code',
         type: 'suggestion',
-        schema: [],
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    ignoreChildPathImport: {
+                        description: 'If `true`, will ignore ./ included imports.',
+                        type: 'boolean',
+                        default: true,
+                    },
+                },
+                additionalProperties: false,
+            },
+        ],
         messages: {
             hasTsPathsImport: `has replaceable import '{{filePath}}'`,
         },
     },
-    defaultOptions: [],
-    create(context) {
+    defaultOptions: [
+        {
+            ignoreChildPathImport: true,
+        },
+    ],
+    create(context, [options]) {
+        const { ignoreChildPathImport } = options || {};
         const { program } = utils_1.ESLintUtils.getParserServices(context);
         const compilerOptions = program.getCompilerOptions();
         const currentDirectory = program.getCurrentDirectory();
@@ -85,6 +102,9 @@ exports.default = (0, createRule_1.createRule)({
                     return;
                 }
                 const [_, quote, importPath] = matchResult;
+                if (ignoreChildPathImport && importPath.startsWith('./')) {
+                    return;
+                }
                 const fixedFilePath = getFixedFilePath(importPath);
                 if (!!fixedFilePath && fixedFilePath !== importPath) {
                     context.report({

@@ -21,13 +21,13 @@ exports.default = (0, createRule_1.createRule)({
             {
                 type: 'object',
                 properties: {
-                    allowParentPathImport: {
-                        description: 'If `false`, will report ../ included imports.',
+                    disallowParentPathImport: {
+                        description: 'If `true`, will report ../ included imports.',
                         type: 'boolean',
-                        default: false,
+                        default: true,
                     },
-                    allowChildPathImport: {
-                        description: 'If `false`, will report ./ included imports.',
+                    disallowChildPathImport: {
+                        description: 'If `true`, will report ./ included imports.',
                         type: 'boolean',
                         default: false,
                     },
@@ -41,16 +41,16 @@ exports.default = (0, createRule_1.createRule)({
     },
     defaultOptions: [
         {
-            allowParentPathImport: false,
-            allowChildPathImport: false,
+            disallowParentPathImport: true,
+            disallowChildPathImport: false,
         },
     ],
     create(context, [options]) {
         const targetSubPaths = [];
-        if (options.allowParentPathImport !== true) {
+        if ((options === null || options === void 0 ? void 0 : options.disallowParentPathImport) === true) {
             targetSubPaths.push('..');
         }
-        if (options.allowChildPathImport !== true) {
+        if ((options === null || options === void 0 ? void 0 : options.disallowChildPathImport) === true) {
             targetSubPaths.push('.');
         }
         const { program } = utils_1.ESLintUtils.getParserServices(context);
