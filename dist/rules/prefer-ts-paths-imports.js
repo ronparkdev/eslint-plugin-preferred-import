@@ -3,10 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
+const utils_1 = require("@typescript-eslint/utils");
 const createRule_1 = require("../utils/createRule");
 const path_2 = require("../utils/path");
+const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js'];
 exports.default = (0, createRule_1.createRule)({
     name: 'prefer-ts-paths-imports',
     meta: {
@@ -43,19 +44,30 @@ exports.default = (0, createRule_1.createRule)({
                 }
             });
         });
-        const getFixedFilePath = (relativeTargetFilePath) => {
-            const lintingFilePath = (0, path_2.getLintingFilePath)(context);
-            const lintingFolderPath = path_1.default.dirname(lintingFilePath);
-            const absoluteTargetFilePath = path_1.default.resolve(lintingFolderPath, relativeTargetFilePath);
-            for (const absoluteSrcFilePath of Object.keys(pathMap)) {
-                const { distPath, prefixed } = pathMap[absoluteSrcFilePath];
+        const checkIsInternalSourceFile = (filePath) => {
+            return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
+                .map((path) => program.getSourceFile(path))
+                .filter((sourceFile) => !program.isSourceFileDefaultLibrary(sourceFile) && !program.isSourceFileFromExternalLibrary(sourceFile))
+                .find((path) => !!path);
+        };
+        const getFixedFilePath = (targetPath) => {
+            const lintingPath = (0, path_2.getLintingFilePath)(context);
+            const lintingBasePath = path_1.default.dirname(lintingPath);
+            const isRelativeTargetPath = !!targetPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
+            const absoluteTargetPath = path_1.default.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath);
+            const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath);
+            if (!isInternalTargetPath) {
+                return null;
+            }
+            for (const absoluteSrcPath of Object.keys(pathMap)) {
+                const { distPath, prefixed } = pathMap[absoluteSrcPath];
                 if (prefixed) {
-                    if (absoluteTargetFilePath.toLowerCase().startsWith(absoluteSrcFilePath.toLocaleLowerCase())) {
-                        return path_1.default.join(distPath, absoluteTargetFilePath.slice(absoluteSrcFilePath.length));
+                    if (absoluteTargetPath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase())) {
+                        return path_1.default.join(distPath, absoluteTargetPath.slice(absoluteSrcPath.length));
                     }
                 }
                 else {
-                    if (absoluteTargetFilePath.toLowerCase() === absoluteSrcFilePath.toLowerCase()) {
+                    if (absoluteTargetPath.toLowerCase() === absoluteSrcPath.toLowerCase()) {
                         return distPath;
                     }
                 }

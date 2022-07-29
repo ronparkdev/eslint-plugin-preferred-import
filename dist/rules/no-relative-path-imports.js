@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("@typescript-eslint/utils");
 const path_1 = __importDefault(require("path"));
+const utils_1 = require("@typescript-eslint/utils");
 const createRule_1 = require("../utils/createRule");
 const path_2 = require("../utils/path");
 exports.default = (0, createRule_1.createRule)({
@@ -46,7 +46,7 @@ exports.default = (0, createRule_1.createRule)({
         },
     ],
     create(context, [options]) {
-        let targetSubPaths = [];
+        const targetSubPaths = [];
         if (options.allowParentPathImport !== true) {
             targetSubPaths.push('..');
         }
