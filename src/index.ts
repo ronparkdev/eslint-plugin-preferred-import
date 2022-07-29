@@ -1,7 +1,7 @@
 'use strict'
 
-import preferTsPathsImports from './rules/prefer-ts-paths-imports'
 import noRelativePathImports from './rules/no-relative-path-imports'
+import preferTsPathsImports from './rules/prefer-ts-paths-imports'
 
 // Import all rules in lib/rules
 module.exports.rules = {

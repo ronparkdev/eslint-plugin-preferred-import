@@ -1,6 +1,7 @@
+import path from 'path'
+
 import { ESLintUtils } from '@typescript-eslint/utils'
 
-import path from 'path'
 import { createRule } from '../utils/createRule'
 import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
@@ -52,7 +53,7 @@ export default createRule<Options, MessageIds>({
     },
   ],
   create(context, [options]) {
-    let targetSubPaths = []
+    const targetSubPaths = []
 
     if (options.allowParentPathImport !== true) {
       targetSubPaths.push('..')

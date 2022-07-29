@@ -1,6 +1,7 @@
+import path from 'path'
+
 import { ESLintUtils } from '@typescript-eslint/utils'
 
-import path from 'path'
 import { createRule } from '../utils/createRule'
 import { getLintingFilePath } from '../utils/path'
 
