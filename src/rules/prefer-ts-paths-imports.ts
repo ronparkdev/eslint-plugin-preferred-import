@@ -66,9 +66,11 @@ export default createRule<Options, MessageIds>({
         .map((path) => program.getSourceFile(path))
         .filter(
           (sourceFile) =>
-            !program.isSourceFileDefaultLibrary(sourceFile) && !program.isSourceFileFromExternalLibrary(sourceFile),
+            sourceFile &&
+            !program.isSourceFileDefaultLibrary(sourceFile) &&
+            !program.isSourceFileFromExternalLibrary(sourceFile),
         )
-        .find((path) => !!path)
+        .find((sourceFile) => !!sourceFile)
     }
 
     const getFixedFilePath = (targetPath) => {
