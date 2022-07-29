@@ -37,8 +37,8 @@ module.exports = {
   rules: {
     // Add your rule config to rules
     'preferred-import/no-relative-path-imports': ['error', {
-      'allowParentPathImport': false, // You can customize options
-      'allowChildPathImport': true,
+      'disallowParentPathImport': true, // do lint of ../ included import, (default is true)
+      'disallowChildPathImport': true, // do lint of ./ included import, (default is false)
     }]
   }
 }

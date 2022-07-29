@@ -7,8 +7,8 @@ import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
 type Options = [
   {
-    allowParentPathImport?: boolean
-    allowChildPathImport?: boolean
+    disallowParentPathImport?: boolean
+    disallowChildPathImport?: boolean
   },
 ]
 
@@ -28,13 +28,13 @@ export default createRule<Options, MessageIds>({
       {
         type: 'object',
         properties: {
-          allowParentPathImport: {
-            description: 'If `false`, will report ../ included imports.',
+          disallowParentPathImport: {
+            description: 'If `true`, will report ../ included imports.',
             type: 'boolean',
-            default: false,
+            default: true,
           },
-          allowChildPathImport: {
-            description: 'If `false`, will report ./ included imports.',
+          disallowChildPathImport: {
+            description: 'If `true`, will report ./ included imports.',
             type: 'boolean',
             default: false,
           },
@@ -48,18 +48,18 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      allowParentPathImport: false,
-      allowChildPathImport: false,
+      disallowParentPathImport: true,
+      disallowChildPathImport: false,
     },
   ],
   create(context, [options]) {
     const targetSubPaths = []
 
-    if (options.allowParentPathImport !== true) {
+    if (options?.disallowParentPathImport === true) {
       targetSubPaths.push('..')
     }
 
-    if (options.allowChildPathImport !== true) {
+    if (options?.disallowChildPathImport === true) {
       targetSubPaths.push('.')
     }
 
