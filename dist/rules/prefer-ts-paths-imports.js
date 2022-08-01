@@ -25,7 +25,7 @@ exports.default = (0, createRule_1.createRule)({
                     ignoreChildPathImport: {
                         description: 'If `true`, will ignore ./ included imports.',
                         type: 'boolean',
-                        default: true,
+                        default: false,
                     },
                 },
                 additionalProperties: false,
@@ -37,7 +37,7 @@ exports.default = (0, createRule_1.createRule)({
     },
     defaultOptions: [
         {
-            ignoreChildPathImport: true,
+            ignoreChildPathImport: false,
         },
     ],
     create(context, [options]) {
@@ -61,6 +61,7 @@ exports.default = (0, createRule_1.createRule)({
                 }
             });
         });
+        console.log({ pathMap });
         const checkIsInternalSourceFile = (filePath) => {
             return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
                 .map((path) => program.getSourceFile(path))
@@ -75,6 +76,20 @@ exports.default = (0, createRule_1.createRule)({
             const isRelativeTargetPath = !!targetPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
             const absoluteTargetPath = path_1.default.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath);
             const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath);
+            console.log({ targetPath, isRelativeTargetPath, absoluteTargetPath, isInternalTargetPath });
+            TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteTargetPath}${postfix}`)
+                .map((path) => program.getSourceFile(path))
+                .forEach((sourceFile) => {
+                if (sourceFile) {
+                    const isSourceFileDefaultLibrary = program.isSourceFileDefaultLibrary(sourceFile);
+                    const isSourceFileFromExternalLibrary = program.isSourceFileFromExternalLibrary(sourceFile);
+                    console.log({ isSourceFileDefaultLibrary, isSourceFileFromExternalLibrary });
+                }
+            });
+            console.log(program
+                .getSourceFiles()
+                .filter((sp) => !program.isSourceFileFromExternalLibrary(sp))
+                .map((s) => s.fileName));
             if (!isInternalTargetPath) {
                 return null;
             }

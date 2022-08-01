@@ -29,7 +29,7 @@ exports.default = (0, createRule_1.createRule)({
                     disallowChildPathImport: {
                         description: 'If `true`, will report ./ included imports.',
                         type: 'boolean',
-                        default: false,
+                        default: true,
                     },
                 },
                 additionalProperties: false,
@@ -42,7 +42,7 @@ exports.default = (0, createRule_1.createRule)({
     defaultOptions: [
         {
             disallowParentPathImport: true,
-            disallowChildPathImport: false,
+            disallowChildPathImport: true,
         },
     ],
     create(context, [options]) {
