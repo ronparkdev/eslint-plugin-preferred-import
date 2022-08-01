@@ -1,5 +1,6 @@
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 import path from 'path'
+
+import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 
 const { RuleTester } = ESLintUtils
 
@@ -30,15 +31,15 @@ ruleTester.run('prefer-ts-paths-imports - simple', rule, {
   ],
   invalid: [
     {
-      code: `import { Bar } from 'share/barUtil'`,
+      code: `import { Bar } from 'share/bar'`,
       errors: [
         {
           messageId: 'hasTsPathsImport',
-          data: { filePath: '@share/barUtil' },
+          data: { filePath: '@share/bar' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
       ],
-      output: `import { Bar } from '@share/barUtil'`,
+      output: `import { Bar } from '@share/bar'`,
       filename: getFilename('main.ts'),
     },
     {

@@ -1,5 +1,6 @@
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 import path from 'path'
+
+import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 
 const { RuleTester } = ESLintUtils
 

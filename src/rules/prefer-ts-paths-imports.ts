@@ -39,7 +39,7 @@ export default createRule<Options, MessageIds>({
           ignoreChildPathImport: {
             description: 'If `true`, will ignore ./ included imports.',
             type: 'boolean',
-            default: true,
+            default: false,
           },
         },
         additionalProperties: false,
@@ -51,7 +51,7 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      ignoreChildPathImport: true,
+      ignoreChildPathImport: false,
     },
   ],
   create(context, [options]) {
@@ -83,6 +83,8 @@ export default createRule<Options, MessageIds>({
       })
     })
 
+    console.log({ pathMap })
+
     const checkIsInternalSourceFile = (filePath: string) => {
       return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
         .map((path) => program.getSourceFile(path))
@@ -104,6 +106,25 @@ export default createRule<Options, MessageIds>({
       const absoluteTargetPath = path.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath)
 
       const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath)
+
+      console.log({ targetPath, isRelativeTargetPath, absoluteTargetPath, isInternalTargetPath })
+
+      TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteTargetPath}${postfix}`)
+        .map((path) => program.getSourceFile(path))
+        .forEach((sourceFile) => {
+          if (sourceFile) {
+            const isSourceFileDefaultLibrary = program.isSourceFileDefaultLibrary(sourceFile)
+            const isSourceFileFromExternalLibrary = program.isSourceFileFromExternalLibrary(sourceFile)
+            console.log({ isSourceFileDefaultLibrary, isSourceFileFromExternalLibrary })
+          }
+        })
+
+      console.log(
+        program
+          .getSourceFiles()
+          .filter((sp) => !program.isSourceFileFromExternalLibrary(sp))
+          .map((s) => s.fileName),
+      )
 
       // Ignore external library and default library
       if (!isInternalTargetPath) {

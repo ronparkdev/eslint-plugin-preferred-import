@@ -16,7 +16,7 @@ module.exports = {
     'preferred-import/prefer-ts-paths-imports': 'error', // Add your rule config to rules
     // or
     'preferred-import/no-relative-path-imports': ['error', {
-      'ignoreChildPathImport': false, // ignore lint of ./ included import, (default is true)
+      'ignoreChildPathImport': true, // ignore lint of ./ included import, (default is false)
     }]
   }
 }
@@ -26,8 +26,8 @@ module.exports = {
 The rule that autofixes the absolute path if using relative paths `../` and `./`
 
 ### Options
-* allowParentPathImport : Whether to allow ../ (default: false)
-* allowChildPathImport : Whether to allow ./ (default: false)
+* disallowParentPathImport : Whether to allow ../ (default: true)
+* disallowChildPathImport : Whether to allow ./ (default: true)
 
 ### Configuration Guide
 You need setup .eslintrc.js or .eslintrc.json in your project
@@ -38,7 +38,7 @@ module.exports = {
     // Add your rule config to rules
     'preferred-import/no-relative-path-imports': ['error', {
       'disallowParentPathImport': true, // do lint of ../ included import, (default is true)
-      'disallowChildPathImport': true, // do lint of ./ included import, (default is false)
+      'disallowChildPathImport': true, // do lint of ./ included import, (default is true)
     }]
   }
 }

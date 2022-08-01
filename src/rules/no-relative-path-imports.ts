@@ -36,7 +36,7 @@ export default createRule<Options, MessageIds>({
           disallowChildPathImport: {
             description: 'If `true`, will report ./ included imports.',
             type: 'boolean',
-            default: false,
+            default: true,
           },
         },
         additionalProperties: false,
@@ -49,7 +49,7 @@ export default createRule<Options, MessageIds>({
   defaultOptions: [
     {
       disallowParentPathImport: true,
-      disallowChildPathImport: false,
+      disallowChildPathImport: true,
     },
   ],
   create(context, [options]) {
