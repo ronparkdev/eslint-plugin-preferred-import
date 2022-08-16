@@ -69,10 +69,6 @@ import BarService from '@service/bar'
 
 ## Options
 
-### `ignoreParentDirectoryImport`: 
-* Ignore lint for import of parent folder reference (`../`)
-* default is `false`
-
 ### `ignoreCurrentDirectoryImport` : 
 * Ignore lint for import of current folder reference (`./`)
 * default is `false`
