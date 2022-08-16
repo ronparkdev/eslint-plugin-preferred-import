@@ -4,9 +4,9 @@ import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 
 const { RuleTester } = ESLintUtils
 
-import rule from '../../../../src/rules/no-relative-path-imports'
+import rule from '../../src/rules/js-imports'
 
-const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
+const getFilename = (filePath: string): string => path.resolve('./tests/simple', filePath)
 
 const ruleTester = new RuleTester({
   parser: '@typescript-eslint/parser',
@@ -18,19 +18,36 @@ const ruleTester = new RuleTester({
   },
 })
 
-ruleTester.run('no-relative-path-imports - monorepo wrong case', rule, {
-  valid: [],
+ruleTester.run('js-imports - simple', rule, {
+  valid: [
+    {
+      code: `import { Standalone as StandaloneD } from 'standalone'`,
+      filename: getFilename('main.ts'),
+    },
+  ],
   invalid: [
     {
-      code: `import { Service } from './service'`,
+      code: `import { Standalone as StandaloneB } from './standalone'`,
       errors: [
         {
           messageId: 'hasRelativePathImport',
-          data: { filePath: 'service' },
+          data: { filePath: 'standalone' },
           type: AST_NODE_TYPES.ImportDeclaration,
         },
       ],
-      output: `import { Service } from 'service'`,
+      output: `import { Standalone as StandaloneB } from 'standalone'`,
+      filename: getFilename('main.ts'),
+    },
+    {
+      code: `import { Standalone as StandaloneC } from "./standalone"`,
+      errors: [
+        {
+          messageId: 'hasRelativePathImport',
+          data: { filePath: 'standalone' },
+          type: AST_NODE_TYPES.ImportDeclaration,
+        },
+      ],
+      output: `import { Standalone as StandaloneC } from "standalone"`,
       filename: getFilename('main.ts'),
     },
     {

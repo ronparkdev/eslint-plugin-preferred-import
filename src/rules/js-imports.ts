@@ -15,7 +15,7 @@ type Options = [
 type MessageIds = 'hasRelativePathImport'
 
 export default createRule<Options, MessageIds>({
-  name: 'no-relative-path-imports',
+  name: 'js-imports',
   meta: {
     docs: {
       description: 'Disallow relative path imports (../*, ./*)',
