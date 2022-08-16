@@ -1,49 +1,62 @@
 # eslint-plugin-preferred-import
 [![NPM version][npm-image]][npm-url] [![Build Status][build-image]][build-url]
 
-## prefer-ts-paths-imports
-The rule that autofix imports to match the settings in tscconfig.json paths
+An ESLint plugin for check import path with typescript. This rule read your paths config in tsconfig.json and check your import path that it is correct. And even if incorrect, try to **Auto Fix**.
 
-### Configuration Guide
-You need setup .eslintrc.js or .eslintrc.json in your project
-```js
-module.exports = {
+# Installation
+You’ll first need to install ESLint:
+```
+npm i eslint --save-dev
+```
+
+Next, install `eslint-plugin-preferred-import`:
+```
+npm i eslint-plugin-preferred-import --save-dev
+```
+
+# Usage
+If your project is based on **Typescript**, choice `ts-imports` rule
+
+```javascript
+{
   parser: '@typescript-eslint/parser', // Should be use ts-eslint parser
-  plugins: ['preferred-import'], // Add 'preferred-import' plugin to plugins
+  plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   parserOptions: {
-    project: ['./tsconfig.json'], // Add your tsconfig path to parserOptions.project
+    project: ['./tsconfig.json'], // Add your relative path of tsconfig
   },
   rules: {
-    'preferred-import/prefer-ts-paths-imports': 'error', // Add your rule config to rules
-    // or
-    'preferred-import/no-relative-path-imports': ['error', {
-      'ignoreChildPathImport': true, // ignore lint of ./ included import, (default is false)
-    }]
+	  ...,
+    // Add below rules next to old rules
+    'preferred-import/ts-imports': ['error', {
+      'ignoreParentDirectoryImport': true, // Ignore lint that reference the parent folder (../), default is false
+      'ignoreCurrentDirectoryImport': true, // Ignore lint that reference the current folder (./), default is false
+    }],
   }
 }
 ```
 
-## no-relative-path-imports
-The rule that autofixes the absolute path if using relative paths `../` and `./`
+On the other hand, if your project is based on **Javascript**, choice `js-imports` rule
 
-### Options
-* disallowParentPathImport : Whether to allow ../ (default: true)
-* disallowChildPathImport : Whether to allow ./ (default: true)
-
-### Configuration Guide
-You need setup .eslintrc.js or .eslintrc.json in your project
 ```js
 module.exports = {
-  plugins: ['preferred-import'], // Add 'preferred-import' plugin to plugins
+  plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
     // Add your rule config to rules
-    'preferred-import/no-relative-path-imports': ['error', {
-      'disallowParentPathImport': true, // do lint of ../ included import, (default is true)
-      'disallowChildPathImport': true, // do lint of ./ included import, (default is true)
+    'preferred-import/js-imports': ['error', {
+      'ignoreParentDirectoryImport': true, // Ignore lint that reference the parent folder (../), default is false
+      'ignoreCurrentDirectoryImport': true, // Ignore lint that reference the current folder (./), default is false
     }]
   }
 }
 ```
+
+# Supported Rules
+* [`ts-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/ts-imports.md) : Check for replaceable paths based on basePath, paths field in tsconfig.json. Auto-fixable
+
+* [`js-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/js-imports.md) : Check for replaceable paths based on rules config. Auto-fixable
+
+# License
+BSD License
 
 [npm-image]: http://img.shields.io/npm/v/eslint-plugin-preferred-import.svg
 [npm-url]: https://npmjs.org/package/eslint-plugin-preferred-import
