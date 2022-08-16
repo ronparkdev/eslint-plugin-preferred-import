@@ -1,7 +1,7 @@
 # eslint-plugin-preferred-import
 [![NPM version][npm-image]][npm-url] [![Build Status][build-image]][build-url]
 
-An ESLint plugin for check import path with typescript. This rule read your paths config in tsconfig.json and check your import path that it is correct. And even if incorrect, try to **Auto Fix**.
+An ESLint plugin for checking import path with typescript. This rule reads your paths config in tsconfig.json and checks your import path that it is correct. And even if incorrect, try to **Auto Fix**.
 
 # Installation
 You’ll first need to install ESLint:
@@ -15,36 +15,34 @@ npm i eslint-plugin-preferred-import --save-dev
 ```
 
 # Usage
-If your project is based on **Typescript**, choice `ts-imports` rule
-
+## If your project is based on **Typescript**, choice `ts-import` rule
+Here’s a suggested ESLint configuration:
 ```javascript
 {
-  parser: '@typescript-eslint/parser', // Should be use ts-eslint parser
+  parser: '@typescript-eslint/parser', // Should be used ts-eslint parser
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   parserOptions: {
     project: ['./tsconfig.json'], // Add your relative path of tsconfig
   },
   rules: {
 	  ...,
-    // Add below rules next to old rules
+    // Add the below rules next to the old rules
     'preferred-import/ts-imports': ['error', {
-      'ignoreParentDirectoryImport': true, // Ignore lint that reference the parent folder (../), default is false
-      'ignoreCurrentDirectoryImport': true, // Ignore lint that reference the current folder (./), default is false
+      'ignoreCurrentDirectoryImport': true, // Ignore lint for import of current folder reference (./), default is false
     }],
   }
 }
 ```
 
-On the other hand, if your project is based on **Javascript**, choice `js-imports` rule
-
+## On the other hand, if your project is based on **Javascript**, choose `js-imports` rule
+Here’s a suggested ESLint configuration:
 ```js
 module.exports = {
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
-    // Add your rule config to rules
+    // Add your rule config to the rules
     'preferred-import/js-imports': ['error', {
-      'ignoreParentDirectoryImport': true, // Ignore lint that reference the parent folder (../), default is false
-      'ignoreCurrentDirectoryImport': true, // Ignore lint that reference the current folder (./), default is false
+      'ignoreCurrentDirectoryImport': true, // Ignore lint for import of current folder reference (./), default is false
     }]
   }
 }
