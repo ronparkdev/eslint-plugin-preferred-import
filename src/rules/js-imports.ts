@@ -7,8 +7,8 @@ import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
 
 type Options = [
   {
-    disallowParentPathImport?: boolean
-    disallowChildPathImport?: boolean
+    ignoreParentDirectoryImport?: boolean
+    ignoreCurrentDirectoryImport?: boolean
   },
 ]
 
@@ -28,15 +28,15 @@ export default createRule<Options, MessageIds>({
       {
         type: 'object',
         properties: {
-          disallowParentPathImport: {
-            description: 'If `true`, will report ../ included imports.',
+          ignoreParentDirectoryImport: {
+            description: 'Ignore lint for import of parent folder reference (`../`)',
             type: 'boolean',
-            default: true,
+            default: false,
           },
-          disallowChildPathImport: {
-            description: 'If `true`, will report ./ included imports.',
+          ignoreCurrentDirectoryImport: {
+            description: 'Ignore lint for import of current folder reference (`./`)',
             type: 'boolean',
-            default: true,
+            default: false,
           },
         },
         additionalProperties: false,
@@ -48,18 +48,18 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      disallowParentPathImport: true,
-      disallowChildPathImport: true,
+      ignoreParentDirectoryImport: false,
+      ignoreCurrentDirectoryImport: false,
     },
   ],
   create(context, [options]) {
     const targetSubPaths = []
 
-    if (options?.disallowParentPathImport === true) {
+    if (options?.ignoreParentDirectoryImport !== true) {
       targetSubPaths.push('..')
     }
 
-    if (options?.disallowChildPathImport === true) {
+    if (options?.ignoreCurrentDirectoryImport !== true) {
       targetSubPaths.push('.')
     }
 

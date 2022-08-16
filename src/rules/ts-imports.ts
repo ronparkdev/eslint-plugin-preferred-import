@@ -36,8 +36,8 @@ export default createRule<Options, MessageIds>({
       {
         type: 'object',
         properties: {
-          ignoreChildPathImport: {
-            description: 'If `true`, will ignore ./ included imports.',
+          ignoreCurrentDirectoryImport: {
+            description: 'Ignore lint for import of current folder reference (`./`)',
             type: 'boolean',
             default: false,
           },
@@ -51,11 +51,11 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      ignoreChildPathImport: false,
+      ignoreCurrentDirectoryImport: false,
     },
   ],
   create(context, [options]) {
-    const { ignoreChildPathImport } = options || {}
+    const { ignoreCurrentDirectoryImport } = options || {}
     const { program } = ESLintUtils.getParserServices(context)
 
     const compilerOptions = program.getCompilerOptions()
@@ -160,7 +160,7 @@ export default createRule<Options, MessageIds>({
 
         const [_, quote, importPath] = matchResult
 
-        if (ignoreChildPathImport && importPath.startsWith('./')) {
+        if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
           return
         }
 
