@@ -4,7 +4,7 @@ import { ESLintUtils } from '@typescript-eslint/utils'
 
 const { RuleTester } = ESLintUtils
 
-import rule from '../../../../src/rules/prefer-ts-paths-imports'
+import rule from '../../../../src/rules/ts-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/foo', filePath)
 
@@ -18,7 +18,7 @@ const ruleTester = new RuleTester({
   },
 })
 
-ruleTester.run('prefer-ts-paths-imports - monorepo correct case', rule, {
+ruleTester.run('ts-imports - monorepo correct case', rule, {
   valid: [
     {
       code: `import { Service as FooService } from '@foo/service'`,

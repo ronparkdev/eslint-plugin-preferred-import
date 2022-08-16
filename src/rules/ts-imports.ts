@@ -23,7 +23,7 @@ type MessageIds = 'hasTsPathsImport'
 const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js']
 
 export default createRule<Options, MessageIds>({
-  name: 'prefer-ts-paths-imports',
+  name: 'ts-imports',
   meta: {
     docs: {
       description: 'Disallow replaceable imports defined in paths of tsconfig.json',

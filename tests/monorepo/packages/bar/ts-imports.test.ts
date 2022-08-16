@@ -4,7 +4,7 @@ import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 
 const { RuleTester } = ESLintUtils
 
-import rule from '../../../../src/rules/prefer-ts-paths-imports'
+import rule from '../../../../src/rules/ts-imports'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 
@@ -18,7 +18,7 @@ const ruleTester = new RuleTester({
   },
 })
 
-ruleTester.run('prefer-ts-paths-imports - monorepo wrong case', rule, {
+ruleTester.run('ts-imports - monorepo wrong case', rule, {
   valid: [],
   invalid: [
     {
