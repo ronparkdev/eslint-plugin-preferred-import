@@ -14,7 +14,7 @@ type MappingPathMap = {
 
 type Options = [
   {
-    ignoreChildPathImport?: boolean
+    ignoreCurrentDirectoryImport?: boolean
   },
 ]
 
