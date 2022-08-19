@@ -18,7 +18,7 @@ export default createRule<Options, MessageIds>({
   name: 'js-imports',
   meta: {
     docs: {
-      description: 'Disallow relative path imports (../*, ./*)',
+      description: 'Check for replaceable to absolute paths',
       recommended: 'error',
       suggestion: true,
     },
