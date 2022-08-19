@@ -51,7 +51,8 @@
     "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^5.27.1"
+    "@typescript-eslint/utils": "^5.27.1",
+    "micromatch": "^4.0.5"
   },
   "lint-staged": {
     "*.ts": "prettier --write"
