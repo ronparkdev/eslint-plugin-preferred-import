@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-preferred-import",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Lint rule to autofix unpreferred imports",
   "main": "dist/index.js",
   "scripts": {
