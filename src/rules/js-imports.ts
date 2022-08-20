@@ -92,6 +92,10 @@ export default createRule<Options, MessageIds>({
 
         const [_, quote, importPath] = matchResult
 
+        if (!importPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))) {
+          return
+        }
+
         if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
           return
         }
