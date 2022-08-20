@@ -25,7 +25,7 @@ Here’s a suggested ESLint configuration:
     project: ['./tsconfig.json'], // Add your relative path of tsconfig
   },
   rules: {
-	  ...,
+    ...,
     // Add the below rules next to the old rules
     'preferred-import/ts-imports': ['error'],
   }
@@ -38,6 +38,7 @@ Here’s a suggested ESLint configuration:
 module.exports = {
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
+    ...,
     // Add your rule config to the rules
     'preferred-import/js-imports': ['error']
   }
