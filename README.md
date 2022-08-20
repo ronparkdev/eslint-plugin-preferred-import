@@ -35,12 +35,19 @@ Here’s a suggested ESLint configuration:
 ## On the other hand, if your project is based on **Javascript**, choose `js-imports` rule
 Here’s a suggested ESLint configuration:
 ```js
+const path = require('path')
+
 module.exports = {
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
     ...,
-    // Add your rule config to the rules
-    'preferred-import/js-imports': ['error']
+    // Add your rule config to the rules, resolveAlias should be same value with webpack alias
+    'preferred-import/js-imports': ['error', {
+      'resolveAlias': {
+        'utils': path.resolve(__dirname, 'src/utils'),
+        'reducer$': path.resolve(__dirname, 'src/reducer'),
+      }
+    }]
   }
 }
 ```
