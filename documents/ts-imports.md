@@ -13,9 +13,7 @@ Here’s a suggested ESLint configuration:
   rules: {
 	  ...,
     // Add the below rules next to the old rules
-    'preferred-import/ts-imports': ['error', {
-      'ignoreCurrentDirectoryImport': true, // Ignore lint for import of current folder reference (./), default is false
-    }],
+    'preferred-import/ts-imports': ['error'],
   }
 }
 ```
@@ -61,7 +59,7 @@ import BarService from './bar'
 ```
 
 ### After applying the rule (Autofix by lint)
-```javascript`
+```javascript
 import Standalone from '@standalone'
 import FooUtil from '@utils/foo'
 import BarService from '@service/bar'
@@ -71,7 +69,7 @@ import BarService from '@service/bar'
 
 ### `ignoreCurrentDirectoryImport` : 
 * Ignore lint for import of current folder reference (`./`)
-* default is `false`
+* default is `true`
 
 ## Notes
 In general, Import of current folder reference (./) is an important meaning for a relation between current logic and child logic. So, suggest that turn off `ignoreCurrentDirectoryImport` option for it.

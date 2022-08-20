@@ -27,9 +27,7 @@ Here’s a suggested ESLint configuration:
   rules: {
 	  ...,
     // Add the below rules next to the old rules
-    'preferred-import/ts-imports': ['error', {
-      'ignoreCurrentDirectoryImport': true, // Ignore lint for import of current folder reference (./), default is false
-    }],
+    'preferred-import/ts-imports': ['error'],
   }
 }
 ```
@@ -41,9 +39,7 @@ module.exports = {
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
     // Add your rule config to the rules
-    'preferred-import/js-imports': ['error', {
-      'ignoreCurrentDirectoryImport': true, // Ignore lint for import of current folder reference (./), default is false
-    }]
+    'preferred-import/js-imports': ['error']
   }
 }
 ```

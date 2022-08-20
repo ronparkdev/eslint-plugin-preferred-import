@@ -51,7 +51,7 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      ignoreCurrentDirectoryImport: false,
+      ignoreCurrentDirectoryImport: true,
     },
   ],
   create(context, [options]) {
