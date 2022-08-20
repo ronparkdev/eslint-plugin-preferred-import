@@ -24,7 +24,7 @@
     "autofix"
   ],
   "author": "Sang Min Park (ronparkdev)",
-  "license": "BSD",
+  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/ronparkdev/eslint-plugin-preferred-import/issues",
     "email": "ronpark.dev@gmail.com"
