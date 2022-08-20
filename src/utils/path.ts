@@ -12,7 +12,7 @@ export const getLintingFilePath = (context) => {
 }
 
 // Find nearest matched file path though parent directory
-export const findPathOfMatchedFile = (currentDirectoryPath: string, matcher: string): string | null => {
+export const findPathOfMatchedFile = (currentDirectoryPath: string, matcher: string | string[]): string | null => {
   const possibleDirectoryPaths = currentDirectoryPath
     .split(path.sep)
     .reduce((paths, subPath) => {

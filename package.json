@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-preferred-import",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "description": "Lint rule to autofix unpreferred imports",
   "main": "dist/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "autofix"
   ],
   "author": "Sang Min Park (ronparkdev)",
-  "license": "MIT",
+  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/ronparkdev/eslint-plugin-preferred-import/issues",
     "email": "ronpark.dev@gmail.com"

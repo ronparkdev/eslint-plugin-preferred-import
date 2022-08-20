@@ -9,7 +9,7 @@ const createRule_1 = require("../utils/createRule");
 const path_2 = require("../utils/path");
 const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js'];
 exports.default = (0, createRule_1.createRule)({
-    name: 'prefer-ts-paths-imports',
+    name: 'ts-imports',
     meta: {
         docs: {
             description: 'Disallow replaceable imports defined in paths of tsconfig.json',
@@ -22,8 +22,8 @@ exports.default = (0, createRule_1.createRule)({
             {
                 type: 'object',
                 properties: {
-                    ignoreChildPathImport: {
-                        description: 'If `true`, will ignore ./ included imports.',
+                    ignoreCurrentDirectoryImport: {
+                        description: 'Ignore lint for import of current folder reference (`./`)',
                         type: 'boolean',
                         default: false,
                     },
@@ -37,11 +37,11 @@ exports.default = (0, createRule_1.createRule)({
     },
     defaultOptions: [
         {
-            ignoreChildPathImport: false,
+            ignoreCurrentDirectoryImport: true,
         },
     ],
     create(context, [options]) {
-        const { ignoreChildPathImport } = options || {};
+        const { ignoreCurrentDirectoryImport } = options || {};
         const { program } = utils_1.ESLintUtils.getParserServices(context);
         const compilerOptions = program.getCompilerOptions();
         const currentDirectory = program.getCurrentDirectory();
@@ -61,7 +61,6 @@ exports.default = (0, createRule_1.createRule)({
                 }
             });
         });
-        console.log({ pathMap });
         const checkIsInternalSourceFile = (filePath) => {
             return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
                 .map((path) => program.getSourceFile(path))
@@ -76,20 +75,6 @@ exports.default = (0, createRule_1.createRule)({
             const isRelativeTargetPath = !!targetPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
             const absoluteTargetPath = path_1.default.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath);
             const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath);
-            console.log({ targetPath, isRelativeTargetPath, absoluteTargetPath, isInternalTargetPath });
-            TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteTargetPath}${postfix}`)
-                .map((path) => program.getSourceFile(path))
-                .forEach((sourceFile) => {
-                if (sourceFile) {
-                    const isSourceFileDefaultLibrary = program.isSourceFileDefaultLibrary(sourceFile);
-                    const isSourceFileFromExternalLibrary = program.isSourceFileFromExternalLibrary(sourceFile);
-                    console.log({ isSourceFileDefaultLibrary, isSourceFileFromExternalLibrary });
-                }
-            });
-            console.log(program
-                .getSourceFiles()
-                .filter((sp) => !program.isSourceFileFromExternalLibrary(sp))
-                .map((s) => s.fileName));
             if (!isInternalTargetPath) {
                 return null;
             }
@@ -117,7 +102,7 @@ exports.default = (0, createRule_1.createRule)({
                     return;
                 }
                 const [_, quote, importPath] = matchResult;
-                if (ignoreChildPathImport && importPath.startsWith('./')) {
+                if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
                     return;
                 }
                 const fixedFilePath = getFixedFilePath(importPath);

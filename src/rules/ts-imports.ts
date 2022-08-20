@@ -14,7 +14,7 @@ type MappingPathMap = {
 
 type Options = [
   {
-    ignoreChildPathImport?: boolean
+    ignoreCurrentDirectoryImport?: boolean
   },
 ]
 
@@ -23,7 +23,7 @@ type MessageIds = 'hasTsPathsImport'
 const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js']
 
 export default createRule<Options, MessageIds>({
-  name: 'prefer-ts-paths-imports',
+  name: 'ts-imports',
   meta: {
     docs: {
       description: 'Disallow replaceable imports defined in paths of tsconfig.json',
@@ -36,8 +36,8 @@ export default createRule<Options, MessageIds>({
       {
         type: 'object',
         properties: {
-          ignoreChildPathImport: {
-            description: 'If `true`, will ignore ./ included imports.',
+          ignoreCurrentDirectoryImport: {
+            description: 'Ignore lint for import of current folder reference (`./`)',
             type: 'boolean',
             default: false,
           },
@@ -51,11 +51,11 @@ export default createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
-      ignoreChildPathImport: false,
+      ignoreCurrentDirectoryImport: true,
     },
   ],
   create(context, [options]) {
-    const { ignoreChildPathImport } = options || {}
+    const { ignoreCurrentDirectoryImport } = options || {}
     const { program } = ESLintUtils.getParserServices(context)
 
     const compilerOptions = program.getCompilerOptions()
@@ -83,8 +83,6 @@ export default createRule<Options, MessageIds>({
       })
     })
 
-    console.log({ pathMap })
-
     const checkIsInternalSourceFile = (filePath: string) => {
       return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
         .map((path) => program.getSourceFile(path))
@@ -106,25 +104,6 @@ export default createRule<Options, MessageIds>({
       const absoluteTargetPath = path.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath)
 
       const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath)
-
-      console.log({ targetPath, isRelativeTargetPath, absoluteTargetPath, isInternalTargetPath })
-
-      TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteTargetPath}${postfix}`)
-        .map((path) => program.getSourceFile(path))
-        .forEach((sourceFile) => {
-          if (sourceFile) {
-            const isSourceFileDefaultLibrary = program.isSourceFileDefaultLibrary(sourceFile)
-            const isSourceFileFromExternalLibrary = program.isSourceFileFromExternalLibrary(sourceFile)
-            console.log({ isSourceFileDefaultLibrary, isSourceFileFromExternalLibrary })
-          }
-        })
-
-      console.log(
-        program
-          .getSourceFiles()
-          .filter((sp) => !program.isSourceFileFromExternalLibrary(sp))
-          .map((s) => s.fileName),
-      )
 
       // Ignore external library and default library
       if (!isInternalTargetPath) {
@@ -160,7 +139,7 @@ export default createRule<Options, MessageIds>({
 
         const [_, quote, importPath] = matchResult
 
-        if (ignoreChildPathImport && importPath.startsWith('./')) {
+        if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
           return
         }
 

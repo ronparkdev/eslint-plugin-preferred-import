@@ -2,9 +2,10 @@ import path from 'path'
 
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
 
-const { RuleTester } = ESLintUtils
+import rule from '../../src/rules/ts-imports'
+import { getOptionsInjectedRule } from '../utils/rule'
 
-import rule from '../../src/rules/prefer-ts-paths-imports'
+const { RuleTester } = ESLintUtils
 
 const getFilename = (filePath: string): string => path.resolve('./tests/simple', filePath)
 
@@ -18,7 +19,13 @@ const ruleTester = new RuleTester({
   },
 })
 
-ruleTester.run('prefer-ts-paths-imports - simple', rule, {
+const injectedRule = getOptionsInjectedRule(rule, [
+  {
+    ignoreCurrentDirectoryImport: false,
+  },
+])
+
+ruleTester.run('ts-imports - simple', injectedRule, {
   valid: [
     {
       code: `import { Foo } from '@share/foo'`,
