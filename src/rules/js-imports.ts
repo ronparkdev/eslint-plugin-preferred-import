@@ -1,18 +1,16 @@
 import path from 'path'
 
-import { ESLintUtils } from '@typescript-eslint/utils'
-
 import { createRule } from '../utils/createRule'
-import { getLintingFilePath, getSepSuffixedFolderPath } from '../utils/path'
+import { getLintingFilePath } from '../utils/path'
 
 type Options = [
   {
-    ignoreParentDirectoryImport?: boolean
+    resolveAlias?: { [key in string]: string }
     ignoreCurrentDirectoryImport?: boolean
   },
 ]
 
-type MessageIds = 'hasRelativePathImport'
+type MessageIds = 'hasPreferredImport'
 
 export default createRule<Options, MessageIds>({
   name: 'js-imports',
@@ -28,60 +26,59 @@ export default createRule<Options, MessageIds>({
       {
         type: 'object',
         properties: {
-          ignoreParentDirectoryImport: {
-            description: 'Ignore lint for import of parent folder reference (`../`)',
-            type: 'boolean',
-            default: false,
+          resolveAlias: {
+            description: 'Alias for path',
+            type: 'object',
+            default: {},
           },
           ignoreCurrentDirectoryImport: {
             description: 'Ignore lint for import of current folder reference (`./`)',
             type: 'boolean',
-            default: false,
+            default: true,
           },
         },
         additionalProperties: false,
       },
     ],
     messages: {
-      hasRelativePathImport: `has relative path import '{{filePath}}'`,
+      hasPreferredImport: `has preferred import '{{filePath}}'`,
     },
   },
   defaultOptions: [
     {
-      ignoreParentDirectoryImport: false,
-      ignoreCurrentDirectoryImport: false,
+      resolveAlias: {},
+      ignoreCurrentDirectoryImport: true,
     },
   ],
   create(context, [options]) {
-    const targetSubPaths = []
+    const { resolveAlias: rawResolveAlias, ignoreCurrentDirectoryImport } = options || {}
 
-    if (options?.ignoreParentDirectoryImport !== true) {
-      targetSubPaths.push('..')
-    }
+    const resolveAlias: { [key: string]: { path: string; isExactMatch: boolean } } = Object.keys(
+      rawResolveAlias,
+    ).reduce(
+      (map, key) => ({
+        ...map,
+        [rawResolveAlias[key]]: key.endsWith('$')
+          ? { path: key.slice(0, key.length - 1), isExactMatch: true }
+          : { path: key, isExactMatch: false },
+      }),
+      {},
+    )
 
-    if (options?.ignoreCurrentDirectoryImport !== true) {
-      targetSubPaths.push('.')
-    }
+    const getFixedFilePath = (filePath: string): string => {
+      const key = Object.keys(resolveAlias).find((key) =>
+        resolveAlias[key].isExactMatch
+          ? filePath.toLowerCase() === key.toLowerCase()
+          : filePath.toLowerCase().startsWith(key.toLowerCase()),
+      )
 
-    const { program } = ESLintUtils.getParserServices(context)
-
-    const compilerOptions = program.getCompilerOptions()
-    const currentDirectory = program.getCurrentDirectory()
-
-    const { baseUrl = currentDirectory } = compilerOptions
-
-    const sepSuffixedBaseUrl = getSepSuffixedFolderPath(baseUrl)
-
-    const getFixedFilePath = (relativeTargetFilePath: string): string => {
-      const lintingFilePath = getLintingFilePath(context)
-      const lintingFolderPath = path.dirname(lintingFilePath)
-
-      const absoluteTargetFilePath = path.resolve(lintingFolderPath, relativeTargetFilePath)
-      if (absoluteTargetFilePath.toLowerCase().startsWith(sepSuffixedBaseUrl.toLocaleLowerCase())) {
-        return absoluteTargetFilePath.slice(sepSuffixedBaseUrl.length)
+      if (!key) {
+        return null
       }
 
-      return null
+      const { path } = resolveAlias[key]
+
+      return `${path}${filePath.slice(key.length)}`
     }
 
     return {
@@ -95,18 +92,21 @@ export default createRule<Options, MessageIds>({
 
         const [_, quote, importPath] = matchResult
 
-        const isRelativePath = !!importPath.split(path.sep).find((subPath) => targetSubPaths.includes(subPath))
-        if (!isRelativePath) {
+        if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
           return
         }
 
-        const fixedFilePath = getFixedFilePath(importPath)
+        const lintingFilePath = getLintingFilePath(context)
+        const lintingDirectoryPath = path.dirname(lintingFilePath)
+        const absoluteImportPath = path.resolve(lintingDirectoryPath, importPath)
+
+        const fixedFilePath = getFixedFilePath(absoluteImportPath)
 
         if (!!fixedFilePath && fixedFilePath !== importPath) {
           context.report({
             node,
             data: { filePath: fixedFilePath },
-            messageId: 'hasRelativePathImport',
+            messageId: 'hasPreferredImport',
             fix(fixer) {
               return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`)
             },
