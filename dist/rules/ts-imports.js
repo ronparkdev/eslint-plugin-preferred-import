@@ -46,53 +46,20 @@ exports.default = (0, createRule_1.createRule)({
         const compilerOptions = program.getCompilerOptions();
         const currentDirectory = program.getCurrentDirectory();
         const { paths = {}, baseUrl = currentDirectory } = compilerOptions;
-        const pathMap = {};
-        Object.keys(paths).forEach((distPath) => {
-            paths[distPath].forEach((srcPath) => {
-                const absoluteSrcPath = path_1.default.resolve(baseUrl, srcPath);
-                const isPrefixed = absoluteSrcPath.endsWith('/*') && distPath.endsWith('/*');
-                if (isPrefixed) {
-                    const newSrcPath = absoluteSrcPath.slice(0, absoluteSrcPath.length - 1);
-                    const newDistPath = distPath.slice(0, distPath.length - 1);
-                    pathMap[newSrcPath] = { distPath: newDistPath, prefixed: true };
+        const mappingPaths = Object.keys(paths).flatMap((distPath) => {
+            return paths[distPath].map((srcPath) => {
+                if (srcPath.endsWith('/*') && distPath.endsWith('/*')) {
+                    return {
+                        absoluteSrcPath: path_1.default.resolve(baseUrl, srcPath.slice(0, srcPath.length - 1)),
+                        distPath: distPath.slice(0, distPath.length - 1),
+                        isExactMatch: false,
+                    };
                 }
                 else {
-                    pathMap[absoluteSrcPath] = { distPath, prefixed: false };
+                    return { absoluteSrcPath: path_1.default.resolve(baseUrl, srcPath), distPath, isExactMatch: true };
                 }
             });
         });
-        const checkIsInternalSourceFile = (filePath) => {
-            return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
-                .map((path) => program.getSourceFile(path))
-                .filter((sourceFile) => sourceFile &&
-                !program.isSourceFileDefaultLibrary(sourceFile) &&
-                !program.isSourceFileFromExternalLibrary(sourceFile))
-                .find((sourceFile) => !!sourceFile);
-        };
-        const getFixedFilePath = (targetPath) => {
-            const lintingPath = (0, path_2.getLintingFilePath)(context);
-            const lintingBasePath = path_1.default.dirname(lintingPath);
-            const isRelativeTargetPath = !!targetPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath));
-            const absoluteTargetPath = path_1.default.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath);
-            const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath);
-            if (!isInternalTargetPath) {
-                return null;
-            }
-            for (const absoluteSrcPath of Object.keys(pathMap)) {
-                const { distPath, prefixed } = pathMap[absoluteSrcPath];
-                if (prefixed) {
-                    if (absoluteTargetPath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase())) {
-                        return path_1.default.join(distPath, absoluteTargetPath.slice(absoluteSrcPath.length));
-                    }
-                }
-                else {
-                    if (absoluteTargetPath.toLowerCase() === absoluteSrcPath.toLowerCase()) {
-                        return distPath;
-                    }
-                }
-            }
-            return null;
-        };
         return {
             ImportDeclaration(node) {
                 var _a;
@@ -101,12 +68,33 @@ exports.default = (0, createRule_1.createRule)({
                 if (!matchResult) {
                     return;
                 }
-                const [_, quote, importPath] = matchResult;
-                if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
+                const [_, quote, importFilePath] = matchResult;
+                if (ignoreCurrentDirectoryImport && importFilePath.startsWith('./')) {
                     return;
                 }
-                const fixedFilePath = getFixedFilePath(importPath);
-                if (!!fixedFilePath && fixedFilePath !== importPath) {
+                const filePath = (0, path_2.getLintingFilePath)(context);
+                const directoryPath = path_1.default.dirname(filePath);
+                const isRelativeImportFilePath = !!importFilePath
+                    .split(path_1.default.sep)
+                    .find((subPath) => ['.', '..'].includes(subPath));
+                const absoluteImportFilePath = path_1.default.resolve(isRelativeImportFilePath ? directoryPath : baseUrl, importFilePath);
+                if (TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteImportFilePath}${postfix}`)
+                    .map(program.getSourceFile)
+                    .filter((sourceFile) => !!sourceFile)
+                    .filter((sourceFile) => program.isSourceFileDefaultLibrary(sourceFile) || program.isSourceFileFromExternalLibrary(sourceFile))
+                    .find((sourceFile) => !!sourceFile)) {
+                    return;
+                }
+                const mappingPath = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) => isExactMatch
+                    ? absoluteImportFilePath.toLowerCase() === absoluteSrcPath.toLowerCase()
+                    : absoluteImportFilePath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase()));
+                if (!mappingPath) {
+                    return;
+                }
+                const fixedFilePath = mappingPath.isExactMatch
+                    ? mappingPath.distPath
+                    : path_1.default.join(mappingPath.distPath, absoluteImportFilePath.slice(mappingPath.absoluteSrcPath.length));
+                if (fixedFilePath !== importFilePath) {
                     context.report({
                         node,
                         data: { filePath: fixedFilePath },
