@@ -21,14 +21,20 @@ Here’s a suggested ESLint configuration:
 {
   parser: '@typescript-eslint/parser', // Should be used ts-eslint parser
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
-  parserOptions: {
-    project: ['./tsconfig.json'], // Add your relative path of tsconfig
-  },
-  rules: {
+  overrides: [
     ...,
-    // Add the below rules next to the old rules
-    'preferred-import/ts-imports': ['error'],
-  }
+    // Add rules into overrides
+    {
+      files: ['src/**/*.{ts,tsx}'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        project: ['./tsconfig.json']
+      },
+      rules: {
+        'preferred-import/ts-imports': 'error'
+      }
+    }
+  ],
 }
 ```
 
