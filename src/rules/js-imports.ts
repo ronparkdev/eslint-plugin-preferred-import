@@ -12,6 +12,12 @@ type Options = [
 
 type MessageIds = 'hasPreferredImport'
 
+type MappingPath = {
+  absoluteSrcPath: string
+  distPath: string
+  isExactMatch: boolean
+}
+
 export default createRule<Options, MessageIds>({
   name: 'js-imports',
   meta: {
@@ -51,35 +57,16 @@ export default createRule<Options, MessageIds>({
     },
   ],
   create(context, [options]) {
-    const { resolveAlias: rawResolveAlias, ignoreCurrentDirectoryImport } = options || {}
+    const { resolveAlias: resolveAliasMap, ignoreCurrentDirectoryImport } = options || {}
 
-    const resolveAlias: { [key: string]: { path: string; isExactMatch: boolean } } = Object.keys(
-      rawResolveAlias,
-    ).reduce(
-      (map, key) => ({
-        ...map,
-        [rawResolveAlias[key]]: key.endsWith('$')
-          ? { path: key.slice(0, key.length - 1), isExactMatch: true }
-          : { path: key, isExactMatch: false },
-      }),
-      {},
-    )
-
-    const getFixedFilePath = (filePath: string): string => {
-      const key = Object.keys(resolveAlias).find((key) =>
-        resolveAlias[key].isExactMatch
-          ? filePath.toLowerCase() === key.toLowerCase()
-          : filePath.toLowerCase().startsWith(key.toLowerCase()),
-      )
-
-      if (!key) {
-        return null
+    const mappingPaths: MappingPath[] = Object.keys(resolveAliasMap).map((distPath) => {
+      const isExactMatch = distPath.endsWith('$')
+      return {
+        absoluteSrcPath: resolveAliasMap[distPath],
+        distPath: isExactMatch ? distPath.slice(0, -1) : distPath,
+        isExactMatch,
       }
-
-      const { path } = resolveAlias[key]
-
-      return `${path}${filePath.slice(key.length)}`
-    }
+    })
 
     return {
       ImportDeclaration(node): void {
@@ -104,9 +91,19 @@ export default createRule<Options, MessageIds>({
         const lintingDirectoryPath = path.dirname(lintingFilePath)
         const absoluteImportPath = path.resolve(lintingDirectoryPath, importPath)
 
-        const fixedFilePath = getFixedFilePath(absoluteImportPath)
+        const resolveAlias = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) =>
+          isExactMatch
+            ? absoluteImportPath.toLowerCase() === absoluteSrcPath.toLowerCase()
+            : absoluteImportPath.toLowerCase().startsWith(absoluteSrcPath.toLowerCase()),
+        )
 
-        if (!!fixedFilePath && fixedFilePath !== importPath) {
+        if (!resolveAlias) {
+          return
+        }
+
+        const fixedFilePath = `${resolveAlias.distPath}${absoluteImportPath.slice(resolveAlias.absoluteSrcPath.length)}`
+
+        if (fixedFilePath !== importPath) {
           context.report({
             node,
             data: { filePath: fixedFilePath },
