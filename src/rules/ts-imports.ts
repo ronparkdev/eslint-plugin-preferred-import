@@ -5,11 +5,10 @@ import { ESLintUtils } from '@typescript-eslint/utils'
 import { createRule } from '../utils/createRule'
 import { getLintingFilePath } from '../utils/path'
 
-type MappingPathMap = {
-  [absoluteSrcPath: string]: {
-    distPath: string
-    prefixed: boolean
-  }
+type MappingPath = {
+  absoluteSrcPath: string
+  distPath: string
+  isExactMatch: boolean
 }
 
 type Options = [
@@ -64,69 +63,21 @@ export default createRule<Options, MessageIds>({
     const { paths = {}, baseUrl = currentDirectory } = compilerOptions
 
     // Get replace path map for replacing from absolute path to short path
-    const pathMap: MappingPathMap = {}
-
-    Object.keys(paths).forEach((distPath) => {
-      paths[distPath].forEach((srcPath) => {
-        const absoluteSrcPath = path.resolve(baseUrl, srcPath)
-        const isPrefixed = absoluteSrcPath.endsWith('/*') && distPath.endsWith('/*')
-        if (isPrefixed) {
+    const mappingPaths: MappingPath[] = Object.keys(paths).flatMap((distPath) => {
+      return paths[distPath].map((srcPath) => {
+        if (srcPath.endsWith('/*') && distPath.endsWith('/*')) {
           // Applies to all files in that folder
-          const newSrcPath = absoluteSrcPath.slice(0, absoluteSrcPath.length - 1)
-          const newDistPath = distPath.slice(0, distPath.length - 1)
-
-          pathMap[newSrcPath] = { distPath: newDistPath, prefixed: true }
+          return {
+            absoluteSrcPath: path.resolve(baseUrl, srcPath.slice(0, srcPath.length - 1)),
+            distPath: distPath.slice(0, distPath.length - 1),
+            isExactMatch: false,
+          }
         } else {
           // Apply only this file
-          pathMap[absoluteSrcPath] = { distPath, prefixed: false }
+          return { absoluteSrcPath: path.resolve(baseUrl, srcPath), distPath, isExactMatch: true }
         }
       })
     })
-
-    const checkIsInternalSourceFile = (filePath: string) => {
-      return !!TARGET_PATH_POSTFIXES.map((postfix) => `${filePath}${postfix}`)
-        .map((path) => program.getSourceFile(path))
-        .filter(
-          (sourceFile) =>
-            sourceFile &&
-            !program.isSourceFileDefaultLibrary(sourceFile) &&
-            !program.isSourceFileFromExternalLibrary(sourceFile),
-        )
-        .find((sourceFile) => !!sourceFile)
-    }
-
-    const getFixedFilePath = (targetPath) => {
-      const lintingPath = getLintingFilePath(context)
-      const lintingBasePath = path.dirname(lintingPath)
-
-      const isRelativeTargetPath = !!targetPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))
-
-      const absoluteTargetPath = path.resolve(isRelativeTargetPath ? lintingBasePath : baseUrl, targetPath)
-
-      const isInternalTargetPath = checkIsInternalSourceFile(absoluteTargetPath)
-
-      // Ignore external library and default library
-      if (!isInternalTargetPath) {
-        return null
-      }
-
-      for (const absoluteSrcPath of Object.keys(pathMap)) {
-        const { distPath, prefixed } = pathMap[absoluteSrcPath]
-
-        // Ignore case between two files
-        if (prefixed) {
-          if (absoluteTargetPath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase())) {
-            return path.join(distPath, absoluteTargetPath.slice(absoluteSrcPath.length))
-          }
-        } else {
-          if (absoluteTargetPath.toLowerCase() === absoluteSrcPath.toLowerCase()) {
-            return distPath
-          }
-        }
-      }
-
-      return null
-    }
 
     return {
       ImportDeclaration(node): void {
@@ -137,15 +88,50 @@ export default createRule<Options, MessageIds>({
           return
         }
 
-        const [_, quote, importPath] = matchResult
+        const [_, quote, importFilePath] = matchResult
 
-        if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
+        if (ignoreCurrentDirectoryImport && importFilePath.startsWith('./')) {
           return
         }
 
-        const fixedFilePath = getFixedFilePath(importPath)
+        const filePath = getLintingFilePath(context)
+        const directoryPath = path.dirname(filePath)
 
-        if (!!fixedFilePath && fixedFilePath !== importPath) {
+        const isRelativeImportFilePath = !!importFilePath
+          .split(path.sep)
+          .find((subPath) => ['.', '..'].includes(subPath))
+
+        const absoluteImportFilePath = path.resolve(isRelativeImportFilePath ? directoryPath : baseUrl, importFilePath)
+
+        // Ignore if import file is library
+        if (
+          TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteImportFilePath}${postfix}`)
+            .map(program.getSourceFile)
+            .filter((sourceFile) => !!sourceFile)
+            .filter(
+              (sourceFile) =>
+                program.isSourceFileDefaultLibrary(sourceFile) || program.isSourceFileFromExternalLibrary(sourceFile),
+            )
+            .find((sourceFile) => !!sourceFile)
+        ) {
+          return
+        }
+
+        const mappingPath = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) =>
+          isExactMatch
+            ? absoluteImportFilePath.toLowerCase() === absoluteSrcPath.toLowerCase()
+            : absoluteImportFilePath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase()),
+        )
+
+        if (!mappingPath) {
+          return
+        }
+
+        const fixedFilePath = mappingPath.isExactMatch
+          ? mappingPath.distPath
+          : path.join(mappingPath.distPath, absoluteImportFilePath.slice(mappingPath.absoluteSrcPath.length))
+
+        if (fixedFilePath !== importFilePath) {
           context.report({
             node,
             data: { filePath: fixedFilePath },
