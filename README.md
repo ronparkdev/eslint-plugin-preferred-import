@@ -3,6 +3,8 @@
 
 An ESLint plugin for checking import path with typescript. This rule reads your paths config in tsconfig.json and checks your import path that it is correct. And even if incorrect, try to **Auto Fix**.
 
+![1664534016](https://user-images.githubusercontent.com/47266692/193251941-8a881625-971e-4abe-ae52-6f92d6a0ef94.gif)
+
 # Installation
 You’ll first need to install ESLint:
 ```
@@ -13,6 +15,7 @@ Next, install `eslint-plugin-preferred-import`:
 ```
 npm i eslint-plugin-preferred-import --save-dev
 ```
+
 
 # Usage
 ## If your project is based on **Typescript**, choice `ts-import` rule
