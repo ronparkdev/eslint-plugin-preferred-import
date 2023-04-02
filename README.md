@@ -1,12 +1,12 @@
 # eslint-plugin-preferred-import
 [![NPM version][npm-image]][npm-url] [![Build Status][build-image]][build-url]
 
-An ESLint plugin for checking import path with typescript. This rule reads your paths config in tsconfig.json and checks your import path that it is correct. And even if incorrect, try to **Auto Fix**.
+This ESLint plugin replaces imports written with relative paths with alias paths from the tsconfig.json file, ensuring that the correct paths are used. Therefore, this plugin does not fix incorrect paths, but rather modifies the paths to use the appropriate aliases.
 
 ![1664534016](https://user-images.githubusercontent.com/47266692/193251941-8a881625-971e-4abe-ae52-6f92d6a0ef94.gif)
 
 # Installation
-You’ll first need to install ESLint:
+First, install ESLint:
 ```
 npm i eslint --save-dev
 ```
@@ -18,14 +18,13 @@ npm i eslint-plugin-preferred-import --save-dev
 
 
 # Usage
-## If your project is based on **Typescript**, choice `ts-import` rule
-Here’s a suggested ESLint configuration:
+## If your project is based on **Typescript**, use the `ts-import` rule
+Here is a suggested ESLint configuration:
 ```javascript
 {
   parser: '@typescript-eslint/parser', // Should be used ts-eslint parser
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   overrides: [
-    ...,
     // Add rules into overrides
     {
       files: ['src/**/*.{ts,tsx}'],
@@ -40,16 +39,16 @@ Here’s a suggested ESLint configuration:
   ],
 }
 ```
+The ts-imports rule checks for replaceable paths based on the basePath and paths fields in the tsconfig.json file, and it is auto-fixable.
 
-## On the other hand, if your project is based on **Javascript**, choose `js-imports` rule
-Here’s a suggested ESLint configuration:
+## If your project is based on JavaScript, use the `js-imports` rule
+Here is a suggested ESLint configuration:
 ```js
 const path = require('path')
 
 module.exports = {
   plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
   rules: {
-    ...,
     // Add your rule config to the rules, resolveAlias should be same value with webpack alias
     'preferred-import/js-imports': ['error', {
       'resolveAlias': {
@@ -61,10 +60,12 @@ module.exports = {
 }
 ```
 
-# Supported Rules
-* [`ts-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/ts-imports.md) : Check for replaceable paths based on basePath, paths field in tsconfig.json. Auto-fixable
+The js-imports rule checks for replaceable paths based on the configuration provided in the rules object, and it is auto-fixable.
 
-* [`js-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/js-imports.md) : Check for replaceable paths based on rules config. Auto-fixable
+# Supported Rules
+* [`ts-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/ts-imports.md) : Checks for replaceable paths based on `basePath` and `paths` field in tsconfig.json, and is auto-fixable.
+
+* [`js-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/js-imports.md) : Checks for replaceable paths based on configuration provided in the rules object, and is auto-fixable.
 
 # License
 BSD License
