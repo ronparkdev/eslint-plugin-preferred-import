@@ -37,5 +37,11 @@ ruleTester.run('ts-imports - simple', injectedRule, {
       getFilename('main.ts'),
       `import { Standalone as StandaloneB } from '@standalone'`,
     ),
+    createTSTestCase(
+      `export { Bar } from './share/bar'`,
+      'hasTsPathsImport',
+      getFilename('main.ts'),
+      `export { Bar } from '@share/bar'`,
+    ),
   ],
 })

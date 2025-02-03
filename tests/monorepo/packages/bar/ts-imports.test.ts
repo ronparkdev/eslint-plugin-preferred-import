@@ -29,5 +29,11 @@ ruleTester.run('ts-imports - monorepo wrong case', injectedRule, {
       getFilename('main.ts'),
       `import { Service as ShareService } from '@share/service'`,
     ),
+    createTSTestCase(
+      `export { Service } from '../foo/service'`,
+      'hasTsPathsImport',
+      getFilename('main.ts'),
+      `export { Service } from '@foo/service'`,
+    ),
   ],
 })

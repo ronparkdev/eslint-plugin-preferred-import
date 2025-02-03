@@ -38,10 +38,22 @@ export const createTSTestCase = (code: string, messageId: string, filename: stri
   }
 
   if (fixedCode) {
+    const type = (() => {
+      if (code.includes('import ')) {
+        return AST_NODE_TYPES.ImportDeclaration
+      }
+
+      if (code.includes('export ')) {
+        return AST_NODE_TYPES.ExportNamedDeclaration
+      }
+
+      throw new Error('Invalid code')
+    })()
+
     testCase.errors = [
       {
         messageId,
-        type: AST_NODE_TYPES.ImportDeclaration,
+        type,
         data: { filePath: fixedCode.match(/from ['"](.+)['"]/)[1] },
       },
     ]

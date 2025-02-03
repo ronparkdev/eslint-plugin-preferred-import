@@ -22,6 +22,7 @@ jsRuleTester.run('js-imports', jsInjectedRule, {
   valid: [
     createTSTestCase(`import { Service } from 'service'`, 'hasPreferredImport', getFilename('main.ts')),
     createTSTestCase(`import { OneUtil } from 'util/one'`, 'hasPreferredImport', getFilename('service/one.ts')),
+    createTSTestCase(`export { OneUtil } from 'util/one'`, 'hasPreferredImport', getFilename('service/one.ts')),
   ],
   invalid: [],
 })

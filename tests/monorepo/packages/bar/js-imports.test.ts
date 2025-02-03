@@ -34,5 +34,11 @@ jsRuleTester.run('js-imports - monorepo wrong case', jsInjectedRule, {
       getFilename('service/one.ts'),
       `import { OneUtil } from 'util/one'`,
     ),
+    createTSTestCase(
+      `export { OneUtil } from '../util/one'`,
+      'hasPreferredImport',
+      getFilename('service/one.ts'),
+      `export { OneUtil } from 'util/one'`,
+    ),
   ],
 })

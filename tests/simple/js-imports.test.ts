@@ -45,5 +45,11 @@ ruleTester.run('js-imports', injectedRule, {
       getFilename('service/one.ts'),
       `import { OneUtil } from 'util/one'`,
     ),
+    createTSTestCase(
+      `export { OneUtil } from '../util/one'`,
+      'hasPreferredImport',
+      getFilename('service/one.ts'),
+      `export { OneUtil } from 'util/one'`,
+    ),
   ],
 })

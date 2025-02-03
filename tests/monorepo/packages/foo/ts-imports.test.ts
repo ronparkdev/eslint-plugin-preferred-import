@@ -26,6 +26,7 @@ ruleTester.run('ts-imports - monorepo correct case', injectedRule, {
       'hasTsPathsImport',
       getFilename('main.ts'),
     ),
+    createTSTestCase(`export { Service } from '@foo/service'`, 'hasTsPathsImport', getFilename('main.ts')),
   ],
   invalid: [],
 })
