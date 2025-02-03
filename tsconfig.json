@@ -6,5 +6,6 @@
     "moduleResolution": "Node",
     "removeComments": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "src/**/*.test.ts"]
 }

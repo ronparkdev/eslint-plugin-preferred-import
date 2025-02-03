@@ -1,17 +1,15 @@
 import path from 'path'
 
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
-
 import rule from '../../../../src/rules/js-imports'
 import { getOptionsInjectedRule } from '../../../utils/rule'
+import { createRuleTester, createTSTestCase, getTestFilePath } from '../../../utils/testSetup'
 
-const { RuleTester } = ESLintUtils
+const BASE_PATH = './tests/monorepo/packages/bar'
+const getFilename = (filePath: string): string => getTestFilePath(BASE_PATH, filePath)
 
-const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
+const jsRuleTester = createRuleTester()
 
-const ruleTester = new RuleTester({ parser: '@typescript-eslint/parser' })
-
-const injectedRule = getOptionsInjectedRule(rule, [
+const jsInjectedRule = getOptionsInjectedRule(rule, [
   {
     resolveAlias: {
       service: path.resolve(__dirname, 'service'),
@@ -21,32 +19,26 @@ const injectedRule = getOptionsInjectedRule(rule, [
   },
 ])
 
-ruleTester.run('js-imports - monorepo wrong case', injectedRule, {
+jsRuleTester.run('js-imports - monorepo wrong case', jsInjectedRule, {
   valid: [],
   invalid: [
-    {
-      code: `import { Service } from './service'`,
-      errors: [
-        {
-          messageId: 'hasPreferredImport',
-          data: { filePath: 'service' },
-          type: AST_NODE_TYPES.ImportDeclaration,
-        },
-      ],
-      output: `import { Service } from 'service'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { OneUtil } from '../util/one'`,
-      errors: [
-        {
-          messageId: 'hasPreferredImport',
-          data: { filePath: 'util/one' },
-          type: AST_NODE_TYPES.ImportDeclaration,
-        },
-      ],
-      output: `import { OneUtil } from 'util/one'`,
-      filename: getFilename('service/one.ts'),
-    },
+    createTSTestCase(
+      `import { Service } from './service'`,
+      'hasPreferredImport',
+      getFilename('main.ts'),
+      `import { Service } from 'service'`,
+    ),
+    createTSTestCase(
+      `import { OneUtil } from '../util/one'`,
+      'hasPreferredImport',
+      getFilename('service/one.ts'),
+      `import { OneUtil } from 'util/one'`,
+    ),
+    createTSTestCase(
+      `export { OneUtil } from '../util/one'`,
+      'hasPreferredImport',
+      getFilename('service/one.ts'),
+      `export { OneUtil } from 'util/one'`,
+    ),
   ],
 })

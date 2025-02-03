@@ -1,77 +1,69 @@
 # eslint-plugin-preferred-import
+
 [![NPM version][npm-image]][npm-url] [![Build Status][build-image]][build-url]
 
-This ESLint plugin replaces imports written with relative paths with alias paths from the tsconfig.json file, ensuring that the correct paths are used. Therefore, this plugin does not fix incorrect paths, but rather modifies the paths to use the appropriate aliases.
+ESLint plugin that converts relative imports to alias paths from tsconfig.json or webpack config. Supports auto-fixing.
 
 ![1664534016](https://user-images.githubusercontent.com/47266692/193251941-8a881625-971e-4abe-ae52-6f92d6a0ef94.gif)
 
-# Installation
-First, install ESLint:
-```
-npm i eslint --save-dev
+## Install
+
+```bash
+npm i eslint eslint-plugin-preferred-import --save-dev
 ```
 
-Next, install `eslint-plugin-preferred-import`:
-```
-npm i eslint-plugin-preferred-import --save-dev
-```
+## Usage
 
+### TypeScript Projects (`ts-imports`)
 
-# Usage
-## If your project is based on **Typescript**, use the `ts-import` rule
-Here is a suggested ESLint configuration:
 ```javascript
 {
-  parser: '@typescript-eslint/parser', // Should be used ts-eslint parser
-  plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
-  overrides: [
-    // Add rules into overrides
-    {
-      files: ['src/**/*.{ts,tsx}'],
-      parser: '@typescript-eslint/parser',
-      parserOptions: {
-        project: ['./tsconfig.json']
-      },
-      rules: {
-        'preferred-import/ts-imports': 'error'
-      }
+  parser: '@typescript-eslint/parser',
+  plugins: ['preferred-import'],
+  overrides: [{
+    files: ['src/**/*.{ts,tsx}'],
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      project: ['./tsconfig.json']
+    },
+    rules: {
+      'preferred-import/ts-imports': 'error'
     }
-  ],
+  }]
 }
 ```
-The ts-imports rule checks for replaceable paths based on the basePath and paths fields in the tsconfig.json file, and it is auto-fixable.
 
-## If your project is based on JavaScript, use the `js-imports` rule
-Here is a suggested ESLint configuration:
-```js
+### JavaScript Projects (`js-imports`)
+
+```javascript
 const path = require('path')
 
 module.exports = {
-  plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
+  plugins: ['preferred-import'],
   rules: {
-    // Add your rule config to the rules, resolveAlias should be same value with webpack alias
-    'preferred-import/js-imports': ['error', {
-      'resolveAlias': {
-        'utils': path.resolve(__dirname, 'src/utils'),
-        'reducer$': path.resolve(__dirname, 'src/reducer'),
-      }
-    }]
-  }
+    'preferred-import/js-imports': [
+      'error',
+      {
+        resolveAlias: {
+          utils: path.resolve(__dirname, 'src/utils'),
+          reducer$: path.resolve(__dirname, 'src/reducer'),
+        },
+      },
+    ],
+  },
 }
 ```
 
-The js-imports rule checks for replaceable paths based on the configuration provided in the rules object, and it is auto-fixable.
+## Rules
 
-# Supported Rules
-* [`ts-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/ts-imports.md) : Checks for replaceable paths based on `basePath` and `paths` field in tsconfig.json, and is auto-fixable.
+- [`ts-imports`](./documents/ts-imports.md): Converts paths based on tsconfig.json
+- [`js-imports`](./documents/js-imports.md): Converts paths based on webpack aliases
 
-* [`js-imports`](https://github.com/ronparkdev/eslint-plugin-preferred-import/blob/master/documents/js-imports.md) : Checks for replaceable paths based on configuration provided in the rules object, and is auto-fixable.
+## License
 
-# License
 BSD License
 
 [npm-image]: http://img.shields.io/npm/v/eslint-plugin-preferred-import.svg
 [npm-url]: https://npmjs.org/package/eslint-plugin-preferred-import
-
 [build-image]: http://img.shields.io/github/workflow/status/ronpark-dev/eslint-plugin-preferred-import/Build%20and%20unit%20test.svg
 [build-url]: https://github.com/ronpark-dev/eslint-plugin-preferred-import/actions/workflows/ci.yml

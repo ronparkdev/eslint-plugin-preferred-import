@@ -3,20 +3,17 @@ import path from 'path'
 import { ESLintUtils } from '@typescript-eslint/utils'
 
 import { createRule } from '../utils/createRule'
+import {
+  MappingPath,
+  parseImportDeclaration,
+  shouldIgnoreImport,
+  findMatchingPath,
+  getFixedFilePath,
+  createImportFixer,
+} from '../utils/importRuleUtils'
 import { getLintingFilePath } from '../utils/path'
 
-type MappingPath = {
-  absoluteSrcPath: string
-  distPath: string
-  isExactMatch: boolean
-}
-
-type Options = [
-  {
-    ignoreCurrentDirectoryImport?: boolean
-  },
-]
-
+type Options = [{ ignoreCurrentDirectoryImport?: boolean }]
 type MessageIds = 'hasTsPathsImport'
 
 const TARGET_PATH_POSTFIXES = ['.tsx', '.ts', '/index.tsx', '/index.ts', '.js', '/index.js']
@@ -25,7 +22,7 @@ export default createRule<Options, MessageIds>({
   name: 'ts-imports',
   meta: {
     docs: {
-      description: 'Disallow replaceable imports defined in paths of tsconfig.json',
+      description: 'Check for replaceable imports defined in paths of tsconfig.json',
       recommended: 'error',
       suggestion: true,
     },
@@ -48,100 +45,100 @@ export default createRule<Options, MessageIds>({
       hasTsPathsImport: `has replaceable import '{{filePath}}'`,
     },
   },
-  defaultOptions: [
-    {
-      ignoreCurrentDirectoryImport: true,
-    },
-  ],
+  defaultOptions: [{ ignoreCurrentDirectoryImport: true }],
   create(context, [options]) {
     const { ignoreCurrentDirectoryImport } = options || {}
     const { program } = ESLintUtils.getParserServices(context)
-
     const compilerOptions = program.getCompilerOptions()
     const currentDirectory = program.getCurrentDirectory()
-
     const { paths = {}, baseUrl = currentDirectory } = compilerOptions
 
-    // Get replace path map for replacing from absolute path to short path
-    const mappingPaths: MappingPath[] = Object.keys(paths).flatMap((distPath) => {
-      return paths[distPath].map((srcPath) => {
-        if (srcPath.endsWith('/*') && distPath.endsWith('/*')) {
-          // Applies to all files in that folder
-          return {
-            absoluteSrcPath: path.resolve(baseUrl, srcPath.slice(0, srcPath.length - 1)),
-            distPath: distPath.slice(0, distPath.length - 1),
-            isExactMatch: false,
-          }
-        } else {
-          // Apply only this file
-          return { absoluteSrcPath: path.resolve(baseUrl, srcPath), distPath, isExactMatch: true }
-        }
-      })
-    })
+    const mappingPaths: MappingPath[] = createMappingPaths(paths, baseUrl)
 
     return {
-      ImportDeclaration(node): void {
-        const { source } = node
+      ImportDeclaration(node) {
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
 
-        const matchResult = /^(["'])(.*)(\1)$/g.exec(source?.raw?.trim() || '')
-        if (!matchResult) {
-          return
-        }
-
-        const [_, quote, importFilePath] = matchResult
-
-        if (ignoreCurrentDirectoryImport && importFilePath.startsWith('./')) {
-          return
-        }
+        const { quote, importPath } = importContext
 
         const filePath = getLintingFilePath(context)
         const directoryPath = path.dirname(filePath)
 
-        const isRelativeImportFilePath = !!importFilePath
-          .split(path.sep)
-          .find((subPath) => ['.', '..'].includes(subPath))
+        const isRelativeImport = importPath.startsWith('.') || importPath.startsWith('..')
+        if (isRelativeImport && ignoreCurrentDirectoryImport && importPath.startsWith('./')) return
 
-        const absoluteImportFilePath = path.resolve(isRelativeImportFilePath ? directoryPath : baseUrl, importFilePath)
+        const absoluteImportPath = path.resolve(isRelativeImport ? directoryPath : baseUrl, importPath)
 
-        // Ignore if import file is library
-        if (
-          TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteImportFilePath}${postfix}`)
-            .map(program.getSourceFile)
-            .filter((sourceFile) => !!sourceFile)
-            .filter(
-              (sourceFile) =>
-                program.isSourceFileDefaultLibrary(sourceFile) || program.isSourceFileFromExternalLibrary(sourceFile),
-            )
-            .find((sourceFile) => !!sourceFile)
-        ) {
-          return
-        }
+        if (isExternalLibrary(program, absoluteImportPath)) return
 
-        const mappingPath = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) =>
-          isExactMatch
-            ? absoluteImportFilePath.toLowerCase() === absoluteSrcPath.toLowerCase()
-            : absoluteImportFilePath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase()),
-        )
+        const matchingPath = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!matchingPath) return
 
-        if (!mappingPath) {
-          return
-        }
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, matchingPath)
+        if (fixedFilePath === importPath) return
 
-        const fixedFilePath = mappingPath.isExactMatch
-          ? mappingPath.distPath
-          : path.join(mappingPath.distPath, absoluteImportFilePath.slice(mappingPath.absoluteSrcPath.length))
+        context.report({
+          node,
+          messageId: 'hasTsPathsImport',
+          data: { filePath: fixedFilePath },
+          fix: createImportFixer(node, quote, fixedFilePath),
+        })
+      },
+      ExportNamedDeclaration(node) {
+        if (!node.source) return
 
-        if (fixedFilePath !== importFilePath) {
-          context.report({
-            node,
-            data: { filePath: fixedFilePath },
-            messageId: 'hasTsPathsImport',
-            fix(fixer) {
-              return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`)
-            },
-          })
-        }
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
+
+        const { quote, importPath } = importContext
+
+        const filePath = getLintingFilePath(context)
+        const directoryPath = path.dirname(filePath)
+
+        const isRelativeImport = importPath.startsWith('.') || importPath.startsWith('..')
+        if (isRelativeImport && ignoreCurrentDirectoryImport && importPath.startsWith('./')) return
+
+        const absoluteImportPath = path.resolve(isRelativeImport ? directoryPath : baseUrl, importPath)
+
+        if (isExternalLibrary(program, absoluteImportPath)) return
+
+        const matchingPath = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!matchingPath) return
+
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, matchingPath)
+        if (fixedFilePath === importPath) return
+
+        context.report({
+          node,
+          messageId: 'hasTsPathsImport',
+          data: { filePath: fixedFilePath },
+          fix: createImportFixer(node, quote, fixedFilePath),
+        })
       },
     }
   },
 })
+
+function createMappingPaths(paths: Record<string, string[]>, baseUrl: string): MappingPath[] {
+  return Object.entries(paths).flatMap(([distPath, srcPaths]) =>
+    srcPaths.map((srcPath) => {
+      const isWildcard = srcPath.endsWith('/*') && distPath.endsWith('/*')
+      return {
+        absoluteSrcPath: path.resolve(baseUrl, isWildcard ? srcPath.slice(0, -2) : srcPath),
+        distPath: isWildcard ? distPath.slice(0, -2) : distPath,
+        isExactMatch: !isWildcard,
+      }
+    }),
+  )
+}
+
+function isExternalLibrary(program: any, absoluteImportPath: string): boolean {
+  return TARGET_PATH_POSTFIXES.map((postfix) => `${absoluteImportPath}${postfix}`)
+    .map(program.getSourceFile)
+    .filter(Boolean)
+    .some(
+      (sourceFile) =>
+        program.isSourceFileDefaultLibrary(sourceFile) || program.isSourceFileFromExternalLibrary(sourceFile),
+    )
+}

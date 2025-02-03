@@ -1,6 +1,15 @@
+// src/rules/js-imports.ts
 import path from 'path'
 
 import { createRule } from '../utils/createRule'
+import {
+  MappingPath,
+  parseImportDeclaration,
+  shouldIgnoreImport,
+  findMatchingPath,
+  getFixedFilePath,
+  createImportFixer,
+} from '../utils/importRuleUtils'
 import { getLintingFilePath } from '../utils/path'
 
 type Options = [
@@ -11,12 +20,6 @@ type Options = [
 ]
 
 type MessageIds = 'hasPreferredImport'
-
-type MappingPath = {
-  absoluteSrcPath: string
-  distPath: string
-  isExactMatch: boolean
-}
 
 export default createRule<Options, MessageIds>({
   name: 'js-imports',
@@ -59,10 +62,10 @@ export default createRule<Options, MessageIds>({
   create(context, [options]) {
     const { resolveAlias: resolveAliasMap, ignoreCurrentDirectoryImport } = options || {}
 
-    const mappingPaths: MappingPath[] = Object.keys(resolveAliasMap).map((distPath) => {
+    const mappingPaths: MappingPath[] = Object.entries(resolveAliasMap).map(([distPath, absoluteSrcPath]) => {
       const isExactMatch = distPath.endsWith('$')
       return {
-        absoluteSrcPath: resolveAliasMap[distPath],
+        absoluteSrcPath,
         distPath: isExactMatch ? distPath.slice(0, -1) : distPath,
         isExactMatch,
       }
@@ -70,47 +73,56 @@ export default createRule<Options, MessageIds>({
 
     return {
       ImportDeclaration(node): void {
-        const { source } = node
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
 
-        const matchResult = /^(["'])(.*)(\1)$/g.exec(source?.raw?.trim() || '')
-        if (!matchResult) {
-          return
-        }
+        const { quote, importPath } = importContext
 
-        const [_, quote, importPath] = matchResult
-
-        if (!importPath.split(path.sep).find((subPath) => ['.', '..'].includes(subPath))) {
-          return
-        }
-
-        if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
-          return
-        }
+        if (shouldIgnoreImport(importPath, ignoreCurrentDirectoryImport)) return
 
         const lintingFilePath = getLintingFilePath(context)
         const lintingDirectoryPath = path.dirname(lintingFilePath)
         const absoluteImportPath = path.resolve(lintingDirectoryPath, importPath)
 
-        const resolveAlias = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) =>
-          isExactMatch
-            ? absoluteImportPath.toLowerCase() === absoluteSrcPath.toLowerCase()
-            : absoluteImportPath.toLowerCase().startsWith(absoluteSrcPath.toLowerCase()),
-        )
+        const resolveAlias = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!resolveAlias) return
 
-        if (!resolveAlias) {
-          return
-        }
-
-        const fixedFilePath = `${resolveAlias.distPath}${absoluteImportPath.slice(resolveAlias.absoluteSrcPath.length)}`
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, resolveAlias)
 
         if (fixedFilePath !== importPath) {
           context.report({
             node,
             data: { filePath: fixedFilePath },
             messageId: 'hasPreferredImport',
-            fix(fixer) {
-              return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`)
-            },
+            fix: createImportFixer(node, quote, fixedFilePath),
+          })
+        }
+      },
+      ExportNamedDeclaration(node): void {
+        if (!node.source) return
+
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
+
+        const { quote, importPath } = importContext
+
+        if (shouldIgnoreImport(importPath, ignoreCurrentDirectoryImport)) return
+
+        const lintingFilePath = getLintingFilePath(context)
+        const lintingDirectoryPath = path.dirname(lintingFilePath)
+        const absoluteImportPath = path.resolve(lintingDirectoryPath, importPath)
+
+        const resolveAlias = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!resolveAlias) return
+
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, resolveAlias)
+
+        if (fixedFilePath !== importPath) {
+          context.report({
+            node,
+            data: { filePath: fixedFilePath },
+            messageId: 'hasPreferredImport',
+            fix: createImportFixer(node, quote, fixedFilePath),
           })
         }
       },

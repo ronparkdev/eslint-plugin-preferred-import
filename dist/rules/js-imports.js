@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
 const createRule_1 = require("../utils/createRule");
+const importRuleUtils_1 = require("../utils/importRuleUtils");
 const path_2 = require("../utils/path");
 exports.default = (0, createRule_1.createRule)({
     name: 'js-imports',
@@ -46,47 +47,60 @@ exports.default = (0, createRule_1.createRule)({
     ],
     create(context, [options]) {
         const { resolveAlias: resolveAliasMap, ignoreCurrentDirectoryImport } = options || {};
-        const mappingPaths = Object.keys(resolveAliasMap).map((distPath) => {
+        const mappingPaths = Object.entries(resolveAliasMap).map(([distPath, absoluteSrcPath]) => {
             const isExactMatch = distPath.endsWith('$');
             return {
-                absoluteSrcPath: resolveAliasMap[distPath],
+                absoluteSrcPath,
                 distPath: isExactMatch ? distPath.slice(0, -1) : distPath,
                 isExactMatch,
             };
         });
         return {
             ImportDeclaration(node) {
-                var _a;
-                const { source } = node;
-                const matchResult = /^(["'])(.*)(\1)$/g.exec(((_a = source === null || source === void 0 ? void 0 : source.raw) === null || _a === void 0 ? void 0 : _a.trim()) || '');
-                if (!matchResult) {
+                const importContext = (0, importRuleUtils_1.parseImportDeclaration)(node);
+                if (!importContext)
                     return;
-                }
-                const [_, quote, importPath] = matchResult;
-                if (!importPath.split(path_1.default.sep).find((subPath) => ['.', '..'].includes(subPath))) {
+                const { quote, importPath } = importContext;
+                if ((0, importRuleUtils_1.shouldIgnoreImport)(importPath, ignoreCurrentDirectoryImport))
                     return;
-                }
-                if (ignoreCurrentDirectoryImport && importPath.startsWith('./')) {
-                    return;
-                }
                 const lintingFilePath = (0, path_2.getLintingFilePath)(context);
                 const lintingDirectoryPath = path_1.default.dirname(lintingFilePath);
                 const absoluteImportPath = path_1.default.resolve(lintingDirectoryPath, importPath);
-                const resolveAlias = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) => isExactMatch
-                    ? absoluteImportPath.toLowerCase() === absoluteSrcPath.toLowerCase()
-                    : absoluteImportPath.toLowerCase().startsWith(absoluteSrcPath.toLowerCase()));
-                if (!resolveAlias) {
+                const resolveAlias = (0, importRuleUtils_1.findMatchingPath)(absoluteImportPath, mappingPaths);
+                if (!resolveAlias)
                     return;
-                }
-                const fixedFilePath = `${resolveAlias.distPath}${absoluteImportPath.slice(resolveAlias.absoluteSrcPath.length)}`;
+                const fixedFilePath = (0, importRuleUtils_1.getFixedFilePath)(absoluteImportPath, resolveAlias);
                 if (fixedFilePath !== importPath) {
                     context.report({
                         node,
                         data: { filePath: fixedFilePath },
                         messageId: 'hasPreferredImport',
-                        fix(fixer) {
-                            return fixer.replaceText(source, `${quote}${fixedFilePath}${quote}`);
-                        },
+                        fix: (0, importRuleUtils_1.createImportFixer)(node, quote, fixedFilePath),
+                    });
+                }
+            },
+            ExportNamedDeclaration(node) {
+                if (!node.source)
+                    return;
+                const importContext = (0, importRuleUtils_1.parseImportDeclaration)(node);
+                if (!importContext)
+                    return;
+                const { quote, importPath } = importContext;
+                if ((0, importRuleUtils_1.shouldIgnoreImport)(importPath, ignoreCurrentDirectoryImport))
+                    return;
+                const lintingFilePath = (0, path_2.getLintingFilePath)(context);
+                const lintingDirectoryPath = path_1.default.dirname(lintingFilePath);
+                const absoluteImportPath = path_1.default.resolve(lintingDirectoryPath, importPath);
+                const resolveAlias = (0, importRuleUtils_1.findMatchingPath)(absoluteImportPath, mappingPaths);
+                if (!resolveAlias)
+                    return;
+                const fixedFilePath = (0, importRuleUtils_1.getFixedFilePath)(absoluteImportPath, resolveAlias);
+                if (fixedFilePath !== importPath) {
+                    context.report({
+                        node,
+                        data: { filePath: fixedFilePath },
+                        messageId: 'hasPreferredImport',
+                        fix: (0, importRuleUtils_1.createImportFixer)(node, quote, fixedFilePath),
                     });
                 }
             },
