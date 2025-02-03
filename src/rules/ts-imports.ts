@@ -85,6 +85,37 @@ export default createRule<Options, MessageIds>({
           fix: createImportFixer(node, quote, fixedFilePath),
         })
       },
+      ExportNamedDeclaration(node) {
+        if (!node.source) return
+
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
+
+        const { quote, importPath } = importContext
+
+        const filePath = getLintingFilePath(context)
+        const directoryPath = path.dirname(filePath)
+
+        const isRelativeImport = importPath.startsWith('.') || importPath.startsWith('..')
+        if (isRelativeImport && ignoreCurrentDirectoryImport && importPath.startsWith('./')) return
+
+        const absoluteImportPath = path.resolve(isRelativeImport ? directoryPath : baseUrl, importPath)
+
+        if (isExternalLibrary(program, absoluteImportPath)) return
+
+        const matchingPath = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!matchingPath) return
+
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, matchingPath)
+        if (fixedFilePath === importPath) return
+
+        context.report({
+          node,
+          messageId: 'hasTsPathsImport',
+          data: { filePath: fixedFilePath },
+          fix: createImportFixer(node, quote, fixedFilePath),
+        })
+      },
     }
   },
 })

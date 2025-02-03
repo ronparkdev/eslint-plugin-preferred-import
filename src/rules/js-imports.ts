@@ -98,6 +98,34 @@ export default createRule<Options, MessageIds>({
           })
         }
       },
+      ExportNamedDeclaration(node): void {
+        if (!node.source) return
+
+        const importContext = parseImportDeclaration(node)
+        if (!importContext) return
+
+        const { quote, importPath } = importContext
+
+        if (shouldIgnoreImport(importPath, ignoreCurrentDirectoryImport)) return
+
+        const lintingFilePath = getLintingFilePath(context)
+        const lintingDirectoryPath = path.dirname(lintingFilePath)
+        const absoluteImportPath = path.resolve(lintingDirectoryPath, importPath)
+
+        const resolveAlias = findMatchingPath(absoluteImportPath, mappingPaths)
+        if (!resolveAlias) return
+
+        const fixedFilePath = getFixedFilePath(absoluteImportPath, resolveAlias)
+
+        if (fixedFilePath !== importPath) {
+          context.report({
+            node,
+            data: { filePath: fixedFilePath },
+            messageId: 'hasPreferredImport',
+            fix: createImportFixer(node, quote, fixedFilePath),
+          })
+        }
+      },
     }
   },
 })
