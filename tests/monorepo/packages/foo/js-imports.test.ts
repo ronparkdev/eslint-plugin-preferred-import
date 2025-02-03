@@ -1,17 +1,14 @@
 import path from 'path'
 
-import { ESLintUtils } from '@typescript-eslint/utils'
-
 import rule from '../../../../src/rules/js-imports'
 import { getOptionsInjectedRule } from '../../../utils/rule'
-
-const { RuleTester } = ESLintUtils
+import { createRuleTester, createTSTestCase } from '../../../utils/testSetup'
 
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 
-const ruleTester = new RuleTester({ parser: '@typescript-eslint/parser' })
+const jsRuleTester = createRuleTester()
 
-const injectedRule = getOptionsInjectedRule(rule, [
+const jsInjectedRule = getOptionsInjectedRule(rule, [
   {
     resolveAlias: {
       service: path.resolve(__dirname, 'service'),
@@ -21,16 +18,10 @@ const injectedRule = getOptionsInjectedRule(rule, [
   },
 ])
 
-ruleTester.run('js-imports', injectedRule, {
+jsRuleTester.run('js-imports', jsInjectedRule, {
   valid: [
-    {
-      code: `import { Service } from 'service'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { OneUtil } from 'util/one'`,
-      filename: getFilename('service/one.ts'),
-    },
+    createTSTestCase(`import { Service } from 'service'`, 'hasPreferredImport', getFilename('main.ts')),
+    createTSTestCase(`import { OneUtil } from 'util/one'`, 'hasPreferredImport', getFilename('service/one.ts')),
   ],
   invalid: [],
 })

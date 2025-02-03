@@ -1,23 +1,11 @@
-import path from 'path'
-
-import { ESLintUtils } from '@typescript-eslint/utils'
-
 import rule from '../../../../src/rules/ts-imports'
 import { getOptionsInjectedRule } from '../../../utils/rule'
+import { createTSRuleTester, createTSTestCase, getTestFilePath } from '../../../utils/testSetup'
 
-const { RuleTester } = ESLintUtils
+const BASE_PATH = './tests/monorepo/packages/foo'
+const getFilename = (filePath: string): string => getTestFilePath(BASE_PATH, filePath)
 
-const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/foo', filePath)
-
-const ruleTester = new RuleTester({
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  parserOptions: {
-    ecmaVersion: 2015,
-    project: getFilename('tsconfig.json'),
-    sourceType: 'module',
-  },
-})
+const ruleTester = createTSRuleTester(getFilename('tsconfig.json'))
 
 const injectedRule = getOptionsInjectedRule(rule, [
   {
@@ -27,18 +15,17 @@ const injectedRule = getOptionsInjectedRule(rule, [
 
 ruleTester.run('ts-imports - monorepo correct case', injectedRule, {
   valid: [
-    {
-      code: `import { Service as FooService } from '@foo/service'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { Service } from 'service'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { Service as ShareService } from '@share/service'`,
-      filename: getFilename('main.ts'),
-    },
+    createTSTestCase(
+      `import { Service as FooService } from '@foo/service'`,
+      'hasTsPathsImport',
+      getFilename('main.ts'),
+    ),
+    createTSTestCase(`import { Service } from 'service'`, 'hasTsPathsImport', getFilename('main.ts')),
+    createTSTestCase(
+      `import { Service as ShareService } from '@share/service'`,
+      'hasTsPathsImport',
+      getFilename('main.ts'),
+    ),
   ],
   invalid: [],
 })

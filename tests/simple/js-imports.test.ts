@@ -1,15 +1,13 @@
 import path from 'path'
 
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
-
 import rule from '../../src/rules/js-imports'
 import { getOptionsInjectedRule } from '../utils/rule'
+import { createRuleTester, createTSTestCase, getTestFilePath } from '../utils/testSetup'
 
-const { RuleTester } = ESLintUtils
+const BASE_PATH = './tests/simple'
+const getFilename = (filePath: string): string => getTestFilePath(BASE_PATH, filePath)
 
-const getFilename = (filePath: string): string => path.resolve('./tests/simple', filePath)
-
-const ruleTester = new RuleTester({ parser: '@typescript-eslint/parser' })
+const ruleTester = createRuleTester()
 
 const injectedRule = getOptionsInjectedRule(rule, [
   {
@@ -23,51 +21,29 @@ const injectedRule = getOptionsInjectedRule(rule, [
 
 ruleTester.run('js-imports', injectedRule, {
   valid: [
-    {
-      code: `import { Standalone as StandaloneB } from './standalone/test'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { Standalone as StandaloneD } from 'standalone'`,
-      filename: getFilename('main.ts'),
-    },
+    createTSTestCase(
+      `import { Standalone as StandaloneB } from './standalone/test'`,
+      'hasPreferredImport',
+      getFilename('main.ts'),
+    ),
+    createTSTestCase(
+      `import { Standalone as StandaloneD } from 'standalone'`,
+      'hasPreferredImport',
+      getFilename('main.ts'),
+    ),
   ],
   invalid: [
-    {
-      code: `import { Standalone as StandaloneB } from './standalone'`,
-      errors: [
-        {
-          messageId: 'hasPreferredImport',
-          data: { filePath: 'standalone' },
-          type: AST_NODE_TYPES.ImportDeclaration,
-        },
-      ],
-      output: `import { Standalone as StandaloneB } from 'standalone'`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { Standalone as StandaloneC } from "./standalone"`,
-      errors: [
-        {
-          messageId: 'hasPreferredImport',
-          data: { filePath: 'standalone' },
-          type: AST_NODE_TYPES.ImportDeclaration,
-        },
-      ],
-      output: `import { Standalone as StandaloneC } from "standalone"`,
-      filename: getFilename('main.ts'),
-    },
-    {
-      code: `import { OneUtil } from '../util/one'`,
-      errors: [
-        {
-          messageId: 'hasPreferredImport',
-          data: { filePath: 'util/one' },
-          type: AST_NODE_TYPES.ImportDeclaration,
-        },
-      ],
-      output: `import { OneUtil } from 'util/one'`,
-      filename: getFilename('service/one.ts'),
-    },
+    createTSTestCase(
+      `import { Standalone as StandaloneB } from './standalone'`,
+      'hasPreferredImport',
+      getFilename('main.ts'),
+      `import { Standalone as StandaloneB } from 'standalone'`,
+    ),
+    createTSTestCase(
+      `import { OneUtil } from '../util/one'`,
+      'hasPreferredImport',
+      getFilename('service/one.ts'),
+      `import { OneUtil } from 'util/one'`,
+    ),
   ],
 })
