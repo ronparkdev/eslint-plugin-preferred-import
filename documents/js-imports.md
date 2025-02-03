@@ -1,63 +1,55 @@
 # eslint-plugin-preferred-import/js-imports
-Check for replaceable to absolute paths. Auto-fixable.
-Before applying it, you have to set up `webpack resolve alias` and apply the same to the `resolveAlias` option. (Read this document : https://webpack.js.org/configuration/resolve/#resolvealias)
 
-## Example
-Suppose that your project is organized as below
-```
-package.json
-.eslintrc.js
-/src
-└ standalone.ts <- referenced file
-└ /utils
-  └ foo.ts <- referenced file
-└ /service
-  └ main.ts <- linting file
-```
+Auto-fixes relative paths to webpack alias paths.
 
-And suppose that your **.eslintrc.js** is similar to below 
+## Configuration
+
 ```javascript
-const path = require('path')
-
+// .eslintrc.js
 module.exports = {
-  plugins: [..., 'preferred-import'], // Add 'preferred-import' next to old plugins
+  plugins: ['preferred-import'],
   rules: {
-	  ...,
-    // Add the below rules next to the old rules
-    'preferred-import/js-imports': ['error', {
-      'resolveAlias': {
-        'standalone$': path.resolve(__dirname, 'src/standalone'),
-        'utils': path.resolve(__dirname, 'src/utils'),
-        'service': path.resolve(__dirname, 'src/service'),
+    'preferred-import/js-imports': [
+      'error',
+      {
+        resolveAlias: {
+          utils: path.resolve(__dirname, 'src/utils'),
+          standalone$: path.resolve(__dirname, 'src/standalone'),
+        },
       },
-    }],
-  }
+    ],
+  },
 }
 ```
 
-If it is the above situation, it will lint as below
+## Example
 
-### Before apply rule
+```
+src/
+├── standalone.ts
+├── utils/
+│   └── foo.ts
+└── service/
+    └── main.ts
+```
+
+Before:
+
 ```javascript
 import Standalone from '../standalone'
 import FooUtil from '../utils/foo'
-import BarService from './bar'
+export { Bar } from '../bar'
 ```
 
-### After applying the rule (Autofix by lint)
+After:
+
 ```javascript
 import Standalone from 'standalone'
 import FooUtil from 'utils/foo'
-import BarService from 'service/bar'
+export { Bar } from 'bar'
 ```
 
 ## Options
 
-### `resolveAlias`: 
-* Ignore lint for import of parent folder reference (`../`)
-* This value should match with the webpack alias (Read this document : https://webpack.js.org/configuration/resolve/#resolvealias)
-* default is `{}`
-
-### `ignoreCurrentDirectoryImport` : 
-* Ignore lint for import of current folder reference (`./`)
-* default is `true`
+- `resolveAlias`: Webpack alias paths (default: `{}`)
+- `ignoreCurrentDirectoryImport`: Skip `./` imports (default: `true`)
