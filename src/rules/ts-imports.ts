@@ -118,7 +118,7 @@ export default createRule<Options, MessageIds>({
         const mappingPath = mappingPaths.find(({ absoluteSrcPath, isExactMatch }) =>
           isExactMatch
             ? absoluteImportFilePath.toLowerCase() === absoluteSrcPath.toLowerCase()
-            : absoluteImportFilePath.toLowerCase().startsWith(absoluteSrcPath.toLocaleLowerCase()),
+            : absoluteImportFilePath.toLowerCase().startsWith(absoluteSrcPath.toLowerCase()),
         )
 
         if (!mappingPath) {
