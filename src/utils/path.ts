@@ -4,7 +4,7 @@ import path from 'path'
 import micromatch from 'micromatch'
 
 // Return linting file path of eslint
-export const getLintingFilePath = (context) => {
+export const getLintingFilePath = (context: any) => {
   const options = context.options?.[0] || {}
   const basePath = options.basePath || process.cwd()
   const currentFilename = context.getFilename()
@@ -15,11 +15,11 @@ export const getLintingFilePath = (context) => {
 export const findPathOfMatchedFile = (currentDirectoryPath: string, matcher: string | string[]): string | null => {
   const possibleDirectoryPaths = currentDirectoryPath
     .split(path.sep)
-    .reduce((paths, subPath) => {
+    .reduce((paths: string[], subPath) => {
       const lastPath = paths[paths.length - 1] || path.sep
       const newPath = path.resolve(lastPath, subPath)
       return [...paths, newPath]
-    }, [])
+    }, [] as string[])
     .reverse()
 
   for (const directoryPath of possibleDirectoryPaths) {

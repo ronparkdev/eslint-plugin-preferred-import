@@ -33,6 +33,7 @@
   "homepage": "https://github.com/ronparkdev/eslint-plugin-preferred-import#readme",
   "devDependencies": {
     "@types/jest": "^30",
+    "@types/micromatch": "^4.0.9",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "@typescript-eslint/rule-tester": "^8.40.0",

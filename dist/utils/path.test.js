@@ -17,6 +17,7 @@ const path_1 = __importDefault(require("path"));
 const path_2 = require("./path");
 describe('PathUtils', () => {
     describe('findPathOfMatchedFile', () => {
+        let originalSep;
         beforeEach(() => {
             const dirItemsMap = {
                 '/a/b': [{ isDirectory: () => false, name: 'fb.dat' }],
@@ -26,22 +27,33 @@ describe('PathUtils', () => {
                 ],
                 '/': [],
             };
-            jest.spyOn(fs_1.default, 'readdirSync').mockImplementation((path) => dirItemsMap[path]);
-            jest.spyOn(path_1.default, 'sep', 'get').mockImplementation(() => '/');
+            jest.spyOn(fs_1.default, 'readdirSync').mockImplementation((dirPath) => {
+                return dirItemsMap[dirPath.toString()].map((item) => item.name);
+            });
+            originalSep = path_1.default.sep;
+            Object.defineProperty(path_1.default, 'sep', {
+                value: '/',
+                writable: true,
+                configurable: true,
+            });
         });
         afterEach(() => {
             jest.spyOn(fs_1.default, 'readdirSync').mockRestore();
-            jest.spyOn(path_1.default, 'sep', 'get').mockRestore();
+            Object.defineProperty(path_1.default, 'sep', {
+                value: originalSep,
+                writable: true,
+                configurable: true,
+            });
         });
         test('Should find file in same directory', () => __awaiter(void 0, void 0, void 0, function* () {
             const currentPath = '/a';
-            const matcher = '/a/fa.*';
+            const matcher = 'fa.*';
             const result = (0, path_2.findPathOfMatchedFile)(currentPath, matcher);
             expect(result).toBe('/a/fa.dat');
         }));
         test('Should find file in parent directory', () => __awaiter(void 0, void 0, void 0, function* () {
             const currentPath = '/a/b';
-            const matcher = '/a/fa.*';
+            const matcher = 'fa.*';
             const result = (0, path_2.findPathOfMatchedFile)(currentPath, matcher);
             expect(result).toBe('/a/fa.dat');
         }));

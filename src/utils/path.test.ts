@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs, { Dirent, PathLike } from 'fs'
 import path from 'path'
 
 import { findPathOfMatchedFile } from './path'
@@ -16,8 +16,10 @@ describe('PathUtils', () => {
         ],
         '/': [],
       }
-      jest.spyOn(fs, 'readdirSync').mockImplementation((dirPath: string) => {
-        return dirItemsMap[dirPath] || []
+      jest.spyOn(fs, 'readdirSync').mockImplementation((dirPath: PathLike) => {
+        return dirItemsMap[dirPath.toString() as keyof typeof dirItemsMap].map(
+          (item) => item as unknown as Dirent<Buffer<ArrayBufferLike>>,
+        )
       })
 
       originalSep = path.sep

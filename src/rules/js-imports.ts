@@ -57,10 +57,10 @@ export default createRule<Options, MessageIds>({
   create(context, [options]) {
     const { resolveAlias: resolveAliasMap, ignoreCurrentDirectoryImport } = options || {}
 
-    const mappingPaths: MappingPath[] = Object.keys(resolveAliasMap).map((distPath) => {
+    const mappingPaths: MappingPath[] = Object.keys(resolveAliasMap || {}).map((distPath) => {
       const isExactMatch = distPath.endsWith('$')
       return {
-        absoluteSrcPath: resolveAliasMap[distPath],
+        absoluteSrcPath: resolveAliasMap![distPath],
         distPath: isExactMatch ? distPath.slice(0, -1) : distPath,
         isExactMatch,
       }

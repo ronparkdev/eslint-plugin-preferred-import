@@ -44,7 +44,7 @@ exports.default = (0, createRule_1.createRule)({
     ],
     create(context, [options]) {
         const { resolveAlias: resolveAliasMap, ignoreCurrentDirectoryImport } = options || {};
-        const mappingPaths = Object.keys(resolveAliasMap).map((distPath) => {
+        const mappingPaths = Object.keys(resolveAliasMap || {}).map((distPath) => {
             const isExactMatch = distPath.endsWith('$');
             return {
                 absoluteSrcPath: resolveAliasMap[distPath],
