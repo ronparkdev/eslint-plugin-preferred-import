@@ -5,6 +5,8 @@ import { findPathOfMatchedFile } from './path'
 
 describe('PathUtils', () => {
   describe('findPathOfMatchedFile', () => {
+    let originalSep: string
+
     beforeEach(() => {
       const dirItemsMap = {
         '/a/b': [{ isDirectory: () => false, name: 'fb.dat' }],
@@ -14,19 +16,31 @@ describe('PathUtils', () => {
         ],
         '/': [],
       }
-      jest.spyOn(fs, 'readdirSync').mockImplementation((path: string) => dirItemsMap[path])
-      jest.spyOn(path, 'sep', 'get').mockImplementation(() => '/')
+      jest.spyOn(fs, 'readdirSync').mockImplementation((dirPath: string) => {
+        return dirItemsMap[dirPath] || []
+      })
+
+      originalSep = path.sep
+      Object.defineProperty(path, 'sep', {
+        value: '/',
+        writable: true,
+        configurable: true,
+      })
     })
 
     afterEach(() => {
       jest.spyOn(fs, 'readdirSync').mockRestore()
-      jest.spyOn(path, 'sep', 'get').mockRestore()
+      Object.defineProperty(path, 'sep', {
+        value: originalSep,
+        writable: true,
+        configurable: true,
+      })
     })
 
     test('Should find file in same directory', async () => {
       // given
       const currentPath = '/a'
-      const matcher = '/a/fa.*'
+      const matcher = 'fa.*'
 
       // when
       const result = findPathOfMatchedFile(currentPath, matcher)
@@ -38,7 +52,7 @@ describe('PathUtils', () => {
     test('Should find file in parent directory', async () => {
       // given
       const currentPath = '/a/b'
-      const matcher = '/a/fa.*'
+      const matcher = 'fa.*'
 
       // when
       const result = findPathOfMatchedFile(currentPath, matcher)
