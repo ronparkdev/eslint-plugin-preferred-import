@@ -1,5 +1,3 @@
-'use strict'
-
 import noRelativePathImports from './rules/js-imports'
 import tsImports from './rules/ts-imports'
 
