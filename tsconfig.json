@@ -2,10 +2,16 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "target": "ES2016",
-    "module": "commonjs",
-    "moduleResolution": "Node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "removeComments": true,
-    "types": ["jest", "node"]
+    "isolatedModules": true,
+    "types": [
+      "jest",
+      "node"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
