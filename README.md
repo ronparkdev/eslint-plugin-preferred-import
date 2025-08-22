@@ -19,7 +19,36 @@ npm i eslint-plugin-preferred-import --save-dev
 
 # Usage
 ## If your project is based on **Typescript**, use the `ts-import` rule
-Here is a suggested ESLint configuration:
+
+### ESLint 9+ (Flat Config)
+Here is a suggested ESLint configuration for ESLint 9+:
+```javascript
+// eslint.config.mjs
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import preferredImport from 'eslint-plugin-preferred-import'
+
+export default tseslint.config(
+  eslint.configs.recommended,
+  tseslint.configs.recommendedTypeChecked,
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true, // Automatically finds the nearest tsconfig for each file
+      },
+    },
+    plugins: { 'preferred-import': preferredImport },
+    rules: {
+      'preferred-import/ts-imports': 'error',
+    },
+  },
+  { ignores: ['**/node_modules/**','**/dist/**','**/.next/**','**/.turbo/**'] },
+)
+```
+
+### ESLint 8 and below
+Here is a suggested ESLint configuration for ESLint 8 and below:
 ```javascript
 {
   parser: '@typescript-eslint/parser', // Should be used ts-eslint parser
@@ -39,6 +68,7 @@ Here is a suggested ESLint configuration:
   ],
 }
 ```
+
 The ts-imports rule checks for replaceable paths based on the basePath and paths fields in the tsconfig.json file, and it is auto-fixable.
 
 ## If your project is based on JavaScript, use the `js-imports` rule

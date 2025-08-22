@@ -11,8 +11,6 @@ exports.default = (0, createRule_1.createRule)({
     meta: {
         docs: {
             description: 'Check for replaceable to absolute paths',
-            recommended: 'error',
-            suggestion: true,
         },
         fixable: 'code',
         type: 'suggestion',

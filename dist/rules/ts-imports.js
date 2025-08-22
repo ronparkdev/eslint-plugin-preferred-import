@@ -13,8 +13,6 @@ exports.default = (0, createRule_1.createRule)({
     meta: {
         docs: {
             description: 'Disallow replaceable imports defined in paths of tsconfig.json',
-            recommended: 'error',
-            suggestion: true,
         },
         fixable: 'code',
         type: 'suggestion',

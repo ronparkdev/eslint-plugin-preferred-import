@@ -26,8 +26,6 @@ export default createRule<Options, MessageIds>({
   meta: {
     docs: {
       description: 'Disallow replaceable imports defined in paths of tsconfig.json',
-      recommended: 'error',
-      suggestion: true,
     },
     fixable: 'code',
     type: 'suggestion',
