@@ -13,7 +13,7 @@ const ruleTester = new RuleTester({
     parser: require('@typescript-eslint/parser'),
     parserOptions: {
       ecmaVersion: 2015,
-      project: getFilename('tsconfig.json'),
+      projectService: true,
       sourceType: 'module',
     },
   },
