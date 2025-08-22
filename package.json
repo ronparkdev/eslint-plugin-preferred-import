@@ -35,6 +35,7 @@
     "@types/jest": "^30",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
+    "@typescript-eslint/rule-tester": "^8.40.0",
     "eslint": "^9.0.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^10",

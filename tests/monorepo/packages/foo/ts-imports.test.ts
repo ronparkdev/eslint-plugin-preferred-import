@@ -1,21 +1,21 @@
 import path from 'path'
 
-import { ESLintUtils } from '@typescript-eslint/utils'
+import { AST_NODE_TYPES } from '@typescript-eslint/utils'
+import { RuleTester } from '@typescript-eslint/rule-tester'
 
 import rule from '../../../../src/rules/ts-imports'
 import { getOptionsInjectedRule } from '../../../utils/rule'
 
-const { RuleTester } = ESLintUtils
-
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/foo', filePath)
 
 const ruleTester = new RuleTester({
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  parserOptions: {
-    ecmaVersion: 2015,
-    project: getFilename('tsconfig.json'),
-    sourceType: 'module',
+  languageOptions: {
+    parser: require('@typescript-eslint/parser'),
+    parserOptions: {
+      ecmaVersion: 2015,
+      project: getFilename('tsconfig.json'),
+      sourceType: 'module',
+    },
   },
 })
 

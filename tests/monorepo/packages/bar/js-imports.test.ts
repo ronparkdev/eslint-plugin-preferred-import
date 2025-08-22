@@ -1,15 +1,18 @@
 import path from 'path'
 
-import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils'
+import { AST_NODE_TYPES } from '@typescript-eslint/utils'
+import { RuleTester } from '@typescript-eslint/rule-tester'
 
 import rule from '../../../../src/rules/js-imports'
 import { getOptionsInjectedRule } from '../../../utils/rule'
 
-const { RuleTester } = ESLintUtils
-
 const getFilename = (filePath: string): string => path.resolve('./tests/monorepo/packages/bar', filePath)
 
-const ruleTester = new RuleTester({ parser: '@typescript-eslint/parser' })
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: require('@typescript-eslint/parser'),
+  },
+})
 
 const injectedRule = getOptionsInjectedRule(rule, [
   {
