@@ -2,14 +2,11 @@
 
 // @ts-check
 module.exports = {
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
-  },
   testEnvironment: 'node',
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.tsx?$': ['ts-jest', {
+      isolatedModules: true,
+    }],
   },
   testRegex: '.+\\.test\\.ts$',
   collectCoverage: false,
